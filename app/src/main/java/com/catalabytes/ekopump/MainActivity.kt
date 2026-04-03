@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -38,6 +39,8 @@ import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
+import com.catalabytes.ekopump.ui.settings.CalculadorDialog
+import com.catalabytes.ekopump.domain.calcularAhorro
 import com.catalabytes.ekopump.ui.brent.BrentWidget
 import com.catalabytes.ekopump.ui.brent.BrentHistorialScreen
 import com.catalabytes.ekopump.viewmodel.BrentViewModel
@@ -69,6 +72,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
     val combustible by viewModel.combustible.collectAsState()
     var mostrarMapa by remember { mutableStateOf(false) }
     var mostrarIdiomas by remember { mutableStateOf(false) }
+    var mostrarCalculador by remember { mutableStateOf(false) }
     var mostrarBrent by remember { mutableStateOf(false) }
     val userLat by viewModel.userLat.collectAsState()
     val userLon by viewModel.userLon.collectAsState()
@@ -84,6 +88,9 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
         ))
     }
 
+    if (mostrarCalculador) {
+        CalculadorDialog(onDismiss = { mostrarCalculador = false }, viewModel = viewModel)
+    }
     if (mostrarIdiomas) {
         LanguageSelectorDialog(onDismiss = { mostrarIdiomas = false })
     }
@@ -108,6 +115,9 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                 ) {
                     Text("⛽ EKOPUMP", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp)
                     Row {
+                        IconButton(onClick = { mostrarCalculador = true }) {
+                            Icon(Icons.Default.Settings, contentDescription = "Coche", tint = Color.White)
+                        }
                         IconButton(onClick = { mostrarIdiomas = true }) {
                             Icon(Icons.Default.Language, contentDescription = "Idioma", tint = Color.White)
                         }
@@ -174,7 +184,12 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                             userLon = userLon
                         )
                     } else {
-                        ListaGasolineras(state.data, combustible)
+                        ListaGasolineras(
+                                    lista = state.data,
+                                    combustible = combustible,
+                                    consumo = viewModel.consumo.collectAsState().value,
+                                    litros  = viewModel.litros.collectAsState().value
+                                )
                     }
                 }
             }
@@ -183,7 +198,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
 }
 
 @Composable
-fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustible) {
+fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustible, consumo: Float, litros: Float) {
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
         item {
             Text(
@@ -193,16 +208,41 @@ fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustib
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
             )
         }
-        items(lista.size) { i -> GasolineraItem(lista[i], combustible, posicion = i + 1) }
+        items(lista.size) { i ->
+            val masCercana = lista.minByOrNull { it.distanciaKm ?: Double.MAX_VALUE }
+            val precioRef  = masCercana?.let { combustible.precio(it.gasolinera) }
+            val kmRef      = masCercana?.distanciaKm ?: 0.0
+            GasolineraItem(
+                item        = lista[i],
+                combustible = combustible,
+                posicion    = i + 1,
+                precioRef   = precioRef,
+                kmRef       = kmRef,
+                consumo     = consumo.toDouble(),
+                litros      = litros.toDouble()
+            )
+        }
     }
 }
 
 @Composable
-fun GasolineraItem(item: GasolineraConDistancia, combustible: Combustible, posicion: Int) {
+fun GasolineraItem(
+    item: GasolineraConDistancia,
+    combustible: Combustible,
+    posicion: Int,
+    precioRef: Double?,
+    kmRef: Double,
+    consumo: Double,
+    litros: Double
+) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val g = item.gasolinera
-    val precio = combustible.precio(g)
     val esMasBarata = posicion == 1
+    val precio = combustible.precio(g)
+    val ahorro = if (posicion > 1 && precio != null && precioRef != null && precioRef > 0) {
+        val kmExtra = ((item.distanciaKm ?: 0.0) - kmRef).coerceAtLeast(0.0)
+        com.catalabytes.ekopump.domain.calcularAhorro(precioRef, precio, kmExtra, consumo, litros)
+    } else null
 
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
@@ -235,6 +275,20 @@ fun GasolineraItem(item: GasolineraConDistancia, combustible: Combustible, posic
                         item.distanciaKm?.let { "${"%.1f".format(it)} km · ${g.localidad}" } ?: g.localidad,
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.primary
+                    )
+                }
+                // Chip ahorro/coste vs gasolinera más cercana
+                ahorro?.let { a ->
+                    val (label, color) = if (a.valeLaPena)
+                        "✅ Ahorras ${"%.2f".format(a.beneficioNeto)}€" to androidx.compose.ui.graphics.Color(0xFF2E7D32)
+                    else
+                        "❌ Gastas ${"%.2f".format(-a.beneficioNeto)}€ más" to androidx.compose.ui.graphics.Color(0xFFB71C1C)
+                    Text(
+                        label,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = color,
+                        modifier = Modifier.padding(top = 3.dp)
                     )
                 }
             }

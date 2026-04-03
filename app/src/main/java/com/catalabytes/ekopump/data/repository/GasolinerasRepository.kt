@@ -24,7 +24,7 @@ class GasolinerasRepository @Inject constructor(
         val todas = getGasolineras()
 
         return if (ubicacion != null) {
-            todas
+            val conDistancia = todas
                 .filter { it.latitud != 0.0 && it.longitud != 0.0 }
                 .map { g ->
                     val distancia = calcularDistancia(
@@ -34,7 +34,16 @@ class GasolinerasRepository @Inject constructor(
                     GasolineraConDistancia(g, distancia)
                 }
                 .filter { (it.distanciaKm ?: Double.MAX_VALUE) <= maxKm }
+                .filter { combustible.precio(it.gasolinera) != null }
+
+            // Gasolinera de referencia = la MÁS CERCANA con precio disponible
+            val masCercana = conDistancia.minByOrNull { it.distanciaKm ?: Double.MAX_VALUE }
+
+            // Lista ordenada por precio, con la más cercana marcada
+            conDistancia
                 .sortedBy { combustible.precio(it.gasolinera) ?: Double.MAX_VALUE }
+                .map { it.copy(esMasCercana = it.gasolinera.id == masCercana?.gasolinera?.id) }
+
         } else {
             todas
                 .sortedBy { combustible.precio(it) ?: Double.MAX_VALUE }
@@ -52,7 +61,8 @@ class GasolinerasRepository @Inject constructor(
 
 data class GasolineraConDistancia(
     val gasolinera: Gasolinera,
-    val distanciaKm: Double?
+    val distanciaKm: Double?,
+    val esMasCercana: Boolean = false   // ← nuevo flag
 )
 
 enum class Combustible(val label: String, val precio: (Gasolinera) -> Double?) {
