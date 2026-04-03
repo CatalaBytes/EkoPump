@@ -39,6 +39,7 @@ import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
 import com.catalabytes.ekopump.ui.brent.BrentWidget
+import com.catalabytes.ekopump.ui.brent.BrentHistorialScreen
 import com.catalabytes.ekopump.viewmodel.BrentViewModel
 import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
@@ -68,6 +69,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
     val combustible by viewModel.combustible.collectAsState()
     var mostrarMapa by remember { mutableStateOf(false) }
     var mostrarIdiomas by remember { mutableStateOf(false) }
+    var mostrarBrent by remember { mutableStateOf(false) }
     val userLat by viewModel.userLat.collectAsState()
     val userLon by viewModel.userLon.collectAsState()
 
@@ -84,6 +86,11 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
 
     if (mostrarIdiomas) {
         LanguageSelectorDialog(onDismiss = { mostrarIdiomas = false })
+    }
+
+    if (mostrarBrent) {
+        BrentHistorialScreen(viewModel = brentViewModel, onBack = { mostrarBrent = false })
+        return
     }
 
     Scaffold(
@@ -116,7 +123,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                         }
                     }
                 }
-                BrentWidget(viewModel = brentViewModel)
+                BrentWidget(viewModel = brentViewModel, onClick = { mostrarBrent = true })
                 if (!mostrarMapa) {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
