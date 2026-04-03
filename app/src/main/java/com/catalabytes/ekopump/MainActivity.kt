@@ -38,6 +38,7 @@ import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
+import com.catalabytes.ekopump.ui.brent.BrentWidget
 import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.ui.theme.EkoPumpTheme
@@ -114,6 +115,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
                         }
                     }
                 }
+                BrentWidget()
                 if (!mostrarMapa) {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
