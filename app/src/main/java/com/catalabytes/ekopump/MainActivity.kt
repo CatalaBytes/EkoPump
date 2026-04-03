@@ -1,6 +1,7 @@
 package com.catalabytes.ekopump
 
 import android.Manifest
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -14,6 +15,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
@@ -29,10 +31,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.catalabytes.ekopump.data.prefs.LocaleHelper
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.map.MapScreen
+import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
 import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.ui.theme.EkoPumpTheme
@@ -41,6 +45,13 @@ import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+
+    override fun attachBaseContext(newBase: Context) {
+        val prefs = newBase.getSharedPreferences("ekopump_lang", Context.MODE_PRIVATE)
+        val langCode = prefs.getString("language", "system") ?: "system"
+        super.attachBaseContext(LocaleHelper.applyLanguage(newBase, langCode))
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -53,6 +64,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
     var mostrarMapa by remember { mutableStateOf(false) }
+    var mostrarIdiomas by remember { mutableStateOf(false) }
     val userLat by viewModel.userLat.collectAsState()
     val userLon by viewModel.userLon.collectAsState()
 
@@ -65,6 +77,10 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
+    }
+
+    if (mostrarIdiomas) {
+        LanguageSelectorDialog(onDismiss = { mostrarIdiomas = false })
     }
 
     Scaffold(
@@ -82,6 +98,9 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
                 ) {
                     Text("⛽ EKOPUMP", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp)
                     Row {
+                        IconButton(onClick = { mostrarIdiomas = true }) {
+                            Icon(Icons.Default.Language, contentDescription = "Idioma", tint = Color.White)
+                        }
                         IconButton(onClick = { mostrarMapa = !mostrarMapa }) {
                             Icon(
                                 if (mostrarMapa) Icons.Default.List else Icons.Default.Map,
@@ -123,7 +142,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
                 ) {
                     CircularProgressIndicator(color = EkoGreen40)
                     Spacer(Modifier.height(12.dp))
-                    Text("Buscando gasolineras...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(androidx.compose.ui.res.stringResource(com.catalabytes.ekopump.R.string.buscando), color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 is UiState.Error -> Column(
                     modifier = Modifier.align(Alignment.Center).padding(16.dp),
@@ -157,7 +176,7 @@ fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustib
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
         item {
             Text(
-                "${lista.size} gasolineras en 10 km · ordenadas por precio",
+                androidx.compose.ui.res.stringResource(com.catalabytes.ekopump.R.string.gasolineras_cercanas, lista.size),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)
