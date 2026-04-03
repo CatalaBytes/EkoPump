@@ -10,6 +10,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -188,12 +189,14 @@ fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustib
 
 @Composable
 fun GasolineraItem(item: GasolineraConDistancia, combustible: Combustible, posicion: Int) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val g = item.gasolinera
     val precio = combustible.precio(g)
     val esMasBarata = posicion == 1
 
     Card(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
+            .clickable { com.catalabytes.ekopump.ui.navigation.navegarAGasolinera(context, g.latitud, g.longitud, g.nombre) },
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (esMasBarata) EkoGreen40.copy(alpha = 0.08f)
