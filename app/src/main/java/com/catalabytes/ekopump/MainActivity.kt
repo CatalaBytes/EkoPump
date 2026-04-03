@@ -39,6 +39,7 @@ import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
 import com.catalabytes.ekopump.ui.brent.BrentWidget
+import com.catalabytes.ekopump.viewmodel.BrentViewModel
 import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.ui.theme.EkoPumpTheme
@@ -62,7 +63,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
+fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentViewModel: BrentViewModel = hiltViewModel()) {
     val uiState by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
     var mostrarMapa by remember { mutableStateOf(false) }
@@ -115,7 +116,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel()) {
                         }
                     }
                 }
-                BrentWidget()
+                BrentWidget(viewModel = brentViewModel)
                 if (!mostrarMapa) {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
