@@ -94,6 +94,7 @@ dependencies {
     // ── Coroutines ────────────────────────────────────────────────────────
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.kotlinx.coroutines.play.services)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // ── Hilt (Inyección de dependencias) ──────────────────────────────────
     implementation(libs.hilt.android)

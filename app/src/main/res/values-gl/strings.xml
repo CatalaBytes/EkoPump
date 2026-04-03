@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">EkoPump</string>
+    <string name="buscando">Buscando gasolineiras…</string>
+    <string name="reintentar">Tentar de novo</string>
+    <string name="actualizar">Actualizar</string>
+    <string name="ver_mapa">Ver mapa</string>
+    <string name="ver_lista">Ver lista</string>
+    <string name="gasolineras_cercanas">%1$d gasolineiras en 10 km · ordenadas por prezo</string>
+    <string name="km">%1$s km</string>
+    <string name="combustible_95">Gasolina 95</string>
+    <string name="combustible_98">Gasolina 98</string>
+    <string name="combustible_diesel">Gasóleo</string>
+    <string name="combustible_diesel_premium">Gasóleo Premium</string>
+    <string name="combustible_glp">GLP</string>
+    <string name="permiso_ubicacion">EkoPump precisa a túa localización para atopar as gasolineiras máis próximas</string>
+    <string name="error_ubicacion">Non se puido obter a localización</string>
+    <string name="error_red">Erro de conexión. Comproba a túa internet</string>
+</resources>
