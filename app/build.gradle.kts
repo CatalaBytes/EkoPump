@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt)
     alias(libs.plugins.ksp)
-    //alias(libs.plugins.google.services)
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -25,6 +25,15 @@ android {
         resourceConfigurations += listOf("es", "ca", "eu", "gl", "en")
     }
 
+    signingConfigs {
+            create("release") {
+            storeFile = file("/home/edeb13/ekopump-release.jks")
+            storePassword = "venezuelasubterranea"
+            keyAlias = "ekopump"
+            keyPassword = "venezuelasubterranea"
+        }
+    }
+
     buildTypes {
         debug {
             isDebuggable = true
@@ -35,6 +44,7 @@ android {
             buildConfigField("Boolean", "ENABLE_LOGS", "true")
         }
         release {
+            signingConfig = signingConfigs.getByName("release")          
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -122,10 +132,10 @@ dependencies {
     implementation(libs.play.services.location)
 
     // ── Firebase ──────────────────────────────────────────────────────────
-    //implementation(platform(libs.firebase.bom))
+    implementation(platform(libs.firebase.bom))
     //implementation(libs.firebase.firestore)
     //implementation(libs.firebase.auth)
-    //implementation(libs.firebase.messaging)
+    implementation(libs.firebase.messaging)
     //implementation(libs.firebase.analytics)
 
     // ── Google Play Billing ───────────────────────────────────────────────

@@ -15,4 +15,5 @@
     <string name="permiso_ubicacion">EKOPUMP necesita tu ubicación para encontrar las gasolineras más cercanas</string>
     <string name="error_ubicacion">No se pudo obtener la ubicación</string>
     <string name="error_red">Error de conexión. Comprueba tu internet</string>
+    <string name="widget_description">Precio gasolina más barata cerca de ti</string>
 </resources>

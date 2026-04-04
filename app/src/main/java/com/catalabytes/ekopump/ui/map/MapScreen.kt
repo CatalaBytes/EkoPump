@@ -46,22 +46,25 @@ fun MapScreen(
                             .zoom(12.0)
                             .build()
 
-                        // Añadir icono base
-                        val iconBitmap = crearMarcador("⛽")
-                        style.addImage("ekopump-icon", iconBitmap)
-
-                        // Crear features GeoJSON
+                        // Crear un icono por gasolinera con el precio incluido en el bitmap
                         val features = gasolineras.take(150)
                             .filter { it.gasolinera.latitud != 0.0 }
-                            .map { item ->
+                            .mapIndexed { idx, item ->
                                 val g = item.gasolinera
                                 val precio = combustible.precio(g)
+                                val precioStr = precio?.let { "${"%.3f".format(it)}€" } ?: "—"
+                                val esBarata  = idx == 0
+
+                                // Icono único con precio embebido
+                                val iconKey = "pin_$idx"
+                                val bitmap  = crearMarcadorConPrecio(precioStr, esBarata)
+                                style.addImage(iconKey, bitmap)
+
                                 Feature.fromGeometry(
                                     Point.fromLngLat(g.longitud, g.latitud)
                                 ).also { f ->
+                                    f.addStringProperty("icon", iconKey)
                                     f.addStringProperty("nombre", g.nombre)
-                                    f.addStringProperty("precio",
-                                        precio?.let { "${"%.3f".format(it)}€" } ?: "")
                                 }
                             }
 
@@ -71,18 +74,11 @@ fun MapScreen(
                         )
                         style.addSource(source)
 
-                        // Capa de iconos
                         val layer = SymbolLayer("gasolineras-layer", "gasolineras-source").apply {
                             setProperties(
-                                iconImage("ekopump-icon"),
+                                iconImage("{icon}"),
                                 iconAllowOverlap(true),
-                                iconSize(1.0f),
-                                textField("{precio}"),
-                                textSize(11f),
-                                textColor("#FFFFFF"),
-                                textAnchor("top"),
-                                textOffset(arrayOf(0f, -2.8f)),
-                                textAllowOverlap(false)
+                                iconSize(1.0f)
                             )
                         }
                         style.addLayer(layer)
@@ -94,37 +90,54 @@ fun MapScreen(
     )
 }
 
-private fun crearMarcador(texto: String): Bitmap {
-    val width = 80
-    val height = 80
-    val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
-    val canvas = Canvas(bitmap)
+private fun crearMarcadorConPrecio(precio: String, esBarata: Boolean): Bitmap {
+    val fondoColor  = if (esBarata) Color.parseColor("#1B5E20") else Color.parseColor("#2E7D32")
+    val bordeColor  = if (esBarata) Color.parseColor("#FFD700") else Color.parseColor("#1B5E20")
 
-    val paintCirculo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#2E7D32")
-        style = Paint.Style.FILL
+    val paintFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = fondoColor; style = Paint.Style.FILL
     }
-    val paintTexto = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+    val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = bordeColor; style = Paint.Style.STROKE; strokeWidth = 4f
+    }
+    val paintPunta = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = fondoColor; style = Paint.Style.FILL
+    }
+    val paintPrecio = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 36f
+        textSize = 22f
         typeface = Typeface.DEFAULT_BOLD
         textAlign = Paint.Align.CENTER
     }
-    val paintPunta = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#2E7D32")
-        style = Paint.Style.FILL
+    val paintIcono = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = 18f
+        textAlign = Paint.Align.CENTER
     }
 
-    canvas.drawCircle(width / 2f, height / 2f - 10f, 30f, paintCirculo)
+    val w = 120; val h = 80; val radio = 12f
+    val bitmap = Bitmap.createBitmap(w, h + 20, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
 
+    // Cuerpo redondeado
+    val rect = RectF(2f, 2f, w - 2f, h - 2f)
+    canvas.drawRoundRect(rect, radio, radio, paintFondo)
+    canvas.drawRoundRect(rect, radio, radio, paintBorde)
+
+    // Punta inferior
     val path = Path().apply {
-        moveTo(width / 2f - 8f, height / 2f + 18f)
-        lineTo(width / 2f, height.toFloat())
-        lineTo(width / 2f + 8f, height / 2f + 18f)
+        moveTo(w / 2f - 12f, h - 2f)
+        lineTo(w / 2f, h + 18f)
+        lineTo(w / 2f + 12f, h - 2f)
         close()
     }
     canvas.drawPath(path, paintPunta)
-    canvas.drawText(texto, width / 2f, height / 2f - 2f, paintTexto)
+
+    // Icono ⛽ pequeño arriba
+    canvas.drawText("⛽", w / 2f, 26f, paintIcono)
+
+    // Precio centrado
+    canvas.drawText(precio, w / 2f, 58f, paintPrecio)
 
     return bitmap
 }
