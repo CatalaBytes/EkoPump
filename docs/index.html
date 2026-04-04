@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EkoPump — Gasolina al precio justo</title>
+  <meta name="description" content="Encuentra la gasolinera más barata cerca de ti, calcula tu ahorro real y sigue el precio del Brent en tiempo real. Gratis para Android." />
+  <meta property="og:title" content="EkoPump — Gasolina al precio justo" />
+  <meta property="og:description" content="La app que te dice cuánto pagas de más en gasolina — y dónde no hacerlo." />
+  <meta property="og:url" content="https://ekopump.es" />
+  <meta name="theme-color" content="#0a1a0f" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --green-glow: #bbf7d0;
+      --bg: #070f09;
+      --surface: #0d1a0f;
+      --surface2: #122017;
+      --border: rgba(34,197,94,0.15);
+      --text: #f0fdf4;
+      --muted: #6b8f72;
+      --accent: #4ade80;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(7,15,9,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.04em;
+      color: var(--green);
+    }
+    .logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+    .nav-cta {
+      background: var(--green); color: #052e16;
+      padding: 0.5rem 1.25rem; border-radius: 6px;
+      font-weight: 700; font-size: 0.85rem; text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.05em;
+    }
+    .nav-cta:hover { background: var(--accent); transform: translateY(-1px); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 7rem 1.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 30%, rgba(34,197,94,0.09) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: var(--green); padding: 0.4rem 1rem; border-radius: 999px;
+      font-size: 0.8rem; font-weight: 500; margin-bottom: 1.5rem;
+      letter-spacing: 0.05em; text-transform: uppercase;
+    }
+    .hero-eyebrow .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+    h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(3.5rem, 10vw, 7rem);
+      font-weight: 800; line-height: 0.95;
+      letter-spacing: -0.01em;
+      max-width: 800px; margin-bottom: 1.5rem;
+    }
+    h1 em { color: var(--green); font-style: normal; }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.25rem);
+      color: var(--muted); max-width: 520px;
+      margin-bottom: 2.5rem; line-height: 1.65;
+    }
+
+    .hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--green); color: #052e16;
+      padding: 0.85rem 2rem; border-radius: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem; font-weight: 700; letter-spacing: 0.05em;
+      text-decoration: none; transition: background 0.2s, transform 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent); transform: translateY(-2px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      border: 1px solid var(--border); color: var(--muted);
+      padding: 0.85rem 2rem; border-radius: 8px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem; font-weight: 600; letter-spacing: 0.05em;
+      text-decoration: none; transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--green); color: var(--green); }
+
+    /* GAUGE ANIMATION */
+    .gauge-wrapper {
+      margin: 3.5rem auto 0;
+      position: relative; width: 280px; height: 160px;
+    }
+    .gauge-svg { width: 100%; height: 100%; }
+    .gauge-needle {
+      transform-origin: 140px 140px;
+      animation: needleSwing 3s ease-in-out infinite;
+    }
+    @keyframes needleSwing {
+      0%   { transform: rotate(-80deg); }
+      50%  { transform: rotate(20deg); }
+      100% { transform: rotate(-80deg); }
+    }
+
+    /* STATS */
+    .stats-bar {
+      display: flex; justify-content: center; gap: 0; flex-wrap: wrap;
+      border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      margin: 0; padding: 0;
+    }
+    .stat-item {
+      flex: 1; min-width: 160px;
+      padding: 2rem 1.5rem; text-align: center;
+      border-right: 1px solid var(--border);
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.8rem; font-weight: 800; color: var(--green);
+      line-height: 1; display: block;
+    }
+    .stat-label { font-size: 0.8rem; color: var(--muted); margin-top: 0.3rem; letter-spacing: 0.03em; text-transform: uppercase; }
+
+    /* SECTIONS */
+    section { padding: 5rem 1.5rem; }
+    .container { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem; color: var(--green); text-transform: uppercase;
+      letter-spacing: 0.15em; font-weight: 600; margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      font-weight: 800; line-height: 1;
+      margin-bottom: 1rem;
+    }
+    h2 em { color: var(--green); font-style: normal; }
+    .section-intro { color: var(--muted); font-size: 1.05rem; max-width: 500px; line-height: 1.65; }
+
+    /* FEATURES */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+      margin-top: 3rem;
+    }
+    .feature-card {
+      background: var(--surface); padding: 2rem 1.75rem;
+      transition: background 0.2s;
+    }
+    .feature-card:hover { background: var(--surface2); }
+    .feature-icon {
+      width: 44px; height: 44px; margin-bottom: 1.25rem;
+      background: rgba(34,197,94,0.12);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+    }
+    .feature-icon svg { width: 22px; height: 22px; stroke: var(--green); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .feature-card h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: 0.02em;
+    }
+    .feature-card p { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+
+    /* HOW IT WORKS */
+    .steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2rem; margin-top: 3rem; position: relative;
+    }
+    .step { text-align: center; }
+    .step-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 4rem; font-weight: 800; color: rgba(34,197,94,0.15);
+      line-height: 1; display: block; margin-bottom: 0.5rem;
+    }
+    .step h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem;
+    }
+    .step p { font-size: 0.88rem; color: var(--muted); }
+
+    /* SAVINGS DEMO */
+    .savings-demo {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 2.5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;
+      align-items: center; margin-top: 3rem;
+    }
+    @media(max-width:640px){ .savings-demo { grid-template-columns: 1fr; } }
+    .demo-calc h3 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.5rem; font-weight: 700; margin-bottom: 1.25rem;
+    }
+    .demo-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem;
+    }
+    .demo-row .label { color: var(--muted); }
+    .demo-row .value { font-weight: 500; }
+    .demo-saving {
+      margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;
+    }
+    .demo-saving .label { font-size: 0.9rem; color: var(--muted); }
+    .demo-saving .value {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 2.2rem; font-weight: 800; color: var(--green);
+    }
+    .demo-visual { text-align: center; }
+    .brent-badge {
+      display: inline-block;
+      background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25);
+      border-radius: 8px; padding: 1.25rem 2rem;
+    }
+    .brent-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .brent-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 3rem; font-weight: 800; color: var(--green);
+      display: block; line-height: 1;
+    }
+    .brent-change { font-size: 0.8rem; color: #86efac; margin-top: 0.25rem; }
+
+    /* LANGUAGES */
+    .langs {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem;
+    }
+    .lang-pill {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 999px; padding: 0.35rem 1rem;
+      font-size: 0.8rem; color: var(--muted); letter-spacing: 0.05em;
+    }
+
+    /* CTA */
+    .cta-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px; padding: 4rem 2rem;
+      text-align: center;
+    }
+    .cta-block h2 { margin-bottom: 0.75rem; }
+    .cta-block p { color: var(--muted); margin-bottom: 2rem; }
+    .play-badge {
+      display: inline-flex; align-items: center; gap: 0.75rem;
+      background: #fff; color: #0a0a0a;
+      padding: 0.75rem 1.75rem; border-radius: 10px;
+      text-decoration: none; font-weight: 600; font-size: 0.95rem;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .play-badge:hover { opacity: 0.9; transform: translateY(-2px); }
+    .play-badge svg { width: 28px; height: 28px; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .footer-logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.4rem; font-weight: 800; color: var(--green);
+    }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .footer-links a {
+      font-size: 0.85rem; color: var(--muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--green); }
+    .footer-copy { font-size: 0.8rem; color: var(--muted); }
+
+    /* MOBILE NAV */
+    @media(max-width: 640px) {
+      .nav-links { display: none; }
+      nav { padding: 1rem; }
+    }
+
+    /* SCROLL ANIMATIONS */
+    .fade-up {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo">Eko<span>Pump</span></div>
+  <ul class="nav-links">
+    <li><a href="#funciones">Funciones</a></li>
+    <li><a href="#como-funciona">Cómo funciona</a></li>
+    <li><a href="#privacidad">Privacidad</a></li>
+  </ul>
+  <a href="https://play.google.com/store" class="nav-cta">DESCARGAR</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="dot"></span>
+    Precio Brent en tiempo real
+  </div>
+  <h1>Para de pagar<br /><em>de más</em><br />en gasolina.</h1>
+  <p class="hero-sub">
+    EkoPump localiza la gasolinera más barata cerca de ti,
+    calcula tu ahorro real y sigue el precio del petróleo
+    para que siempre repostes en el momento justo.
+  </p>
+  <div class="hero-actions">
+    <a href="https://play.google.com/store" class="btn-primary">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76a2 2 0 0 0 2.72.76l12.3-7.11-3.4-3.41zM.5 1.22A2 2 0 0 0 0 2.5v19a2 2 0 0 0 .5 1.28L.6 22.9l10.64-10.64v-.25L.6 1.34zM20.3 10.27l-2.92-1.69L14 12l3.37 3.37 2.93-1.7a2 2 0 0 0 0-3.4zM5.9.48.6 11.5v.24L11.24 1.1 8.62-.52A2 2 0 0 0 5.9.48z"/></svg>
+      Google Play
+    </a>
+    <a href="https://github.com/CatalaBytes/EkoPump" class="btn-ghost">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.49 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.21.69.82.57A12 12 0 0 0 12 .3z"/></svg>
+      Ver código
+    </a>
+  </div>
+
+  <!-- Gauge SVG -->
+  <div class="gauge-wrapper">
+    <svg class="gauge-svg" viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#dc2626"/>
+          <stop offset="50%" stop-color="#f59e0b"/>
+          <stop offset="100%" stop-color="#22c55e"/>
+        </linearGradient>
+      </defs>
+      <!-- Arc track -->
+      <path d="M 30 140 A 110 110 0 0 1 250 140" stroke="#1a2e1d" stroke-width="14" fill="none" stroke-linecap="round"/>
+      <!-- Arc fill -->
+      <path d="M 30 140 A 110 110 0 0 1 250 140" stroke="url(#arcGrad)" stroke-width="14" fill="none" stroke-linecap="round" opacity="0.6"/>
+      <!-- Tick marks -->
+      <g stroke="#2d4a31" stroke-width="1">
+        <line x1="30" y1="140" x2="44" y2="140" transform="rotate(-90 140 140)"/>
+        <line x1="30" y1="140" x2="40" y2="140" transform="rotate(-67 140 140)"/>
+        <line x1="30" y1="140" x2="40" y2="140" transform="rotate(-45 140 140)"/>
+        <line x1="30" y1="140" x2="40" y2="140" transform="rotate(-22 140 140)"/>
+        <line x1="30" y1="140" x2="44" y2="140" transform="rotate(0 140 140)"/>
+        <line x1="30" y1="140" x2="40" y2="140" transform="rotate(22 140 140)"/>
+        <line x1="30" y1="140" x2="40" y2="140" transform="rotate(45 140 140)"/>
+        <line x1="30" y1="140" x2="40" y2="140" transform="rotate(67 140 140)"/>
+        <line x1="30" y1="140" x2="44" y2="140" transform="rotate(90 140 140)"/>
+      </g>
+      <!-- Labels -->
+      <text x="24" y="152" font-family="Barlow Condensed,sans-serif" font-size="11" fill="#6b8f72">E</text>
+      <text x="133" y="38" font-family="Barlow Condensed,sans-serif" font-size="11" fill="#22c55e" text-anchor="middle">€/L</text>
+      <text x="253" y="152" font-family="Barlow Condensed,sans-serif" font-size="11" fill="#22c55e">+</text>
+      <!-- Needle -->
+      <g class="gauge-needle">
+        <line x1="140" y1="60" x2="140" y2="138" stroke="#22c55e" stroke-width="2.5" stroke-linecap="round"/>
+        <circle cx="140" cy="140" r="6" fill="#22c55e"/>
+        <circle cx="140" cy="140" r="3" fill="#070f09"/>
+      </g>
+      <!-- Center text -->
+      <text x="140" y="128" font-family="Barlow Condensed,sans-serif" font-size="11" fill="#6b8f72" text-anchor="middle">AHORRO</text>
+    </svg>
+  </div>
+</section>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">+12.000</span>
+    <span class="stat-label">Gasolineras en España</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">5</span>
+    <span class="stat-label">Filtros de combustible</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">5</span>
+    <span class="stat-label">Idiomas oficiales</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">0 €</span>
+    <span class="stat-label">Gratis para siempre</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section id="funciones">
+  <div class="container">
+    <div class="section-label fade-up">Funciones</div>
+    <h2 class="fade-up">Todo lo que<br /><em>necesitas</em> saber.</h2>
+    <p class="section-intro fade-up">Datos oficiales MINETUR. Sin publicidad. Sin trampa.</p>
+    <div class="features-grid fade-up">
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+        </div>
+        <h3>Gasolinera más cercana</h3>
+        <p>GPS de alta precisión. Distancia y precio actualizados cada hora desde la API oficial del Gobierno.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M3 3v18h18M7 16l4-4 4 4 4-6"/></svg>
+        </div>
+        <h3>Precio Brent en tiempo real</h3>
+        <p>Widget en la cabecera y gráfico histórico. Entiende cuándo sube el precio antes de que lo notes en el surtidor.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h6M3 15h6"/></svg>
+        </div>
+        <h3>Calculador de ahorro real</h3>
+        <p>Introduce tu consumo y depósito. EkoPump calcula exactamente cuánto ahorras por llenar el tanque en cada gasolinera.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v4H4zM4 12h16v4H4z"/><path d="M8 20h8"/></svg>
+        </div>
+        <h3>5 tipos de combustible</h3>
+        <p>Gasolina 95 y 98, Diésel A, Diésel B y GLP. Filtra lo que pone tu coche y olvida el resto.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Mapa MapLibre interactivo</h3>
+        <p>Visualiza todas las gasolineras cercanas en el mapa. Sin Google Maps, sin rastreo.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <h3>Alertas push inteligentes</h3>
+        <p>Firebase FCM te notifica cuando el Brent cae o cuando hay una gasolinera más barata que la tuya habitual.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="como-funciona" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="container">
+    <div class="section-label fade-up">Cómo funciona</div>
+    <h2 class="fade-up">Simple. <em>Rápido.</em><br />Sin florituras.</h2>
+    <div class="steps">
+      <div class="step fade-up">
+        <span class="step-num">01</span>
+        <h3>Abre la app</h3>
+        <p>GPS automático. No hace falta configurar nada. En 3 segundos ya tienes los precios de tu zona.</p>
+      </div>
+      <div class="step fade-up">
+        <span class="step-num">02</span>
+        <h3>Compara precios</h3>
+        <p>Lista ordenada por precio + distancia. El ahorro en verde llamativo. Sabes cuánto te cuesta cada opción.</p>
+      </div>
+      <div class="step fade-up">
+        <span class="step-num">03</span>
+        <h3>Reposta y ahorra</h3>
+        <p>Ve a la gasolinera barata. EkoPump registra cuánto has ahorrado con el tiempo. Los céntimos suman.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SAVINGS DEMO -->
+<section>
+  <div class="container">
+    <div class="section-label fade-up">Calculador</div>
+    <h2 class="fade-up">¿Cuánto estás<br /><em>desperdiciando</em>?</h2>
+    <p class="section-intro fade-up">Con un depósito de 50 L y 2 céntimos de diferencia — así lo calcula EkoPump.</p>
+    <div class="savings-demo fade-up">
+      <div class="demo-calc">
+        <h3>Ejemplo real</h3>
+        <div class="demo-row">
+          <span class="label">Tu gasolinera habitual</span>
+          <span class="value">1,689 €/L</span>
+        </div>
+        <div class="demo-row">
+          <span class="label">Gasolinera EkoPump</span>
+          <span class="value">1,649 €/L</span>
+        </div>
+        <div class="demo-row">
+          <span class="label">Diferencia por litro</span>
+          <span class="value" style="color: var(--green);">−0,04 €</span>
+        </div>
+        <div class="demo-row">
+          <span class="label">Depósito (50 L)</span>
+          <span class="value">Lleno completo</span>
+        </div>
+        <div class="demo-saving">
+          <div>
+            <div class="label">Ahorras por repostaje</div>
+            <div style="font-size:0.75rem; color: var(--muted); margin-top:2px;">≈ 24 repostajes/año → <strong style="color:var(--green)">48 € al año</strong></div>
+          </div>
+          <span class="value">2,00 €</span>
+        </div>
+      </div>
+      <div class="demo-visual">
+        <div class="brent-badge">
+          <div class="brent-label">Brent crude</div>
+          <span class="brent-price">82,40</span>
+          <div style="font-size:0.7rem; color: var(--muted);">USD/barril</div>
+          <div class="brent-change">▲ +0,42% hoy</div>
+        </div>
+        <p style="font-size: 0.8rem; color: var(--muted); margin-top: 1.25rem; max-width: 200px; margin-left: auto; margin-right: auto;">
+          EkoPump conecta el precio del Brent con los precios locales para anticipar subidas.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LANGUAGES -->
+<section style="padding-top: 0; padding-bottom: 4rem;">
+  <div class="container" style="border-top: 1px solid var(--border); padding-top: 3rem;">
+    <div class="section-label fade-up">Idiomas</div>
+    <h2 class="fade-up">Hecha para <em>toda</em> España.</h2>
+    <p class="section-intro fade-up">EkoPump habla tu idioma, sea cual sea.</p>
+    <div class="langs fade-up">
+      <span class="lang-pill">Español</span>
+      <span class="lang-pill">Català</span>
+      <span class="lang-pill">Euskara</span>
+      <span class="lang-pill">Galego</span>
+      <span class="lang-pill">English</span>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section style="padding-top: 1rem;">
+  <div class="container">
+    <div class="cta-block fade-up">
+      <div class="section-label" style="justify-content: center; display: flex;">Disponible gratis</div>
+      <h2>Descárgala.<br /><em>Ya.</em></h2>
+      <p>Sin suscripción. Sin datos de pago. Solo ahorro.</p>
+      <a href="https://play.google.com/store" class="play-badge">
+        <svg viewBox="0 0 24 24" fill="#000"><path d="M3.18 23.76a2 2 0 0 0 2.72.76l12.3-7.11-3.4-3.41zM.5 1.22A2 2 0 0 0 0 2.5v19a2 2 0 0 0 .5 1.28L.6 22.9l10.64-10.64v-.25L.6 1.34zM20.3 10.27l-2.92-1.69L14 12l3.37 3.37 2.93-1.7a2 2 0 0 0 0-3.4zM5.9.48.6 11.5v.24L11.24 1.1 8.62-.52A2 2 0 0 0 5.9.48z"/></svg>
+        <div>
+          <div style="font-size: 0.65rem; opacity: 0.6; font-weight: 400; line-height: 1.2;">DISPONIBLE EN</div>
+          <div style="font-size: 1rem; font-weight: 700; line-height: 1.2;">Google Play</div>
+        </div>
+      </a>
+      <p style="margin-top: 1.25rem; font-size: 0.8rem; color: var(--muted);">
+        Pronto en beta cerrada — <a href="https://github.com/CatalaBytes/EkoPump" style="color: var(--green);">síguenos en GitHub</a> para acceso anticipado.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">EkoPump</div>
+  <div class="footer-links">
+    <a href="privacy.html" id="privacidad">Política de privacidad</a>
+    <a href="https://github.com/CatalaBytes/EkoPump">GitHub</a>
+    <a href="mailto:hola@ekopump.es">Contacto</a>
+  </div>
+  <div class="footer-copy">© 2026 EkoPump · ekopump.es</div>
+</footer>
+
+<script>
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+</script>
+
+</body>
+</html>
