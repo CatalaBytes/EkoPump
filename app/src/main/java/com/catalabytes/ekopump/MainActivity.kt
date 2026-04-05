@@ -49,6 +49,15 @@ import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.ui.theme.EkoPumpTheme
 import com.catalabytes.ekopump.viewmodel.GasolinerasViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.border
 import com.catalabytes.ekopump.ui.onboarding.OnboardingScreen
 
 @AndroidEntryPoint
@@ -84,13 +93,15 @@ fun EkoPumpApp() {
 }
 
 @Composable
-fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentViewModel: BrentViewModel = hiltViewModel()) {
-    val uiState by viewModel.uiState.collectAsState()
+fun GasolinerasScreen(
+    viewModel: GasolinerasViewModel = hiltViewModel(),
+    brentViewModel: BrentViewModel = hiltViewModel()
+) {
+    val uiState     by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
-    var mostrarMapa by remember { mutableStateOf(false) }
-    var mostrarIdiomas by remember { mutableStateOf(false) }
-    var mostrarCalculador by remember { mutableStateOf(false) }
-    var mostrarBrent by remember { mutableStateOf(false) }
+    var tabActual   by remember { mutableStateOf(0) }
+    var mostrarIdiomas  by remember { mutableStateOf(false) }
+    var mostrarBrent    by remember { mutableStateOf(false) }
     val userLat by viewModel.userLat.collectAsState()
     val userLon by viewModel.userLon.collectAsState()
 
@@ -106,17 +117,20 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
         ))
     }
 
-    if (mostrarCalculador) {
-        CalculadorDialog(onDismiss = { mostrarCalculador = false }, viewModel = viewModel)
-    }
     if (mostrarIdiomas) {
         LanguageSelectorDialog(onDismiss = { mostrarIdiomas = false })
     }
-
     if (mostrarBrent) {
         BrentHistorialScreen(viewModel = brentViewModel, onBack = { mostrarBrent = false })
         return
     }
+
+    val tabs = listOf(
+        Triple("Lista",     Icons.Default.List,     0),
+        Triple("Mapa",      Icons.Default.Map,      1),
+        Triple("Historial", Icons.Default.Settings, 2),
+        Triple("Perfil",    Icons.Default.Settings, 3)
+    )
 
     Scaffold(
         topBar = {
@@ -131,20 +145,11 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("⛽ EKOPUMP", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 22.sp)
+                    Text("⛽ EKOPUMP", color = Color.White,
+                        fontWeight = FontWeight.ExtraBold, fontSize = 22.sp)
                     Row {
-                        IconButton(onClick = { mostrarCalculador = true }) {
-                            Icon(Icons.Default.Settings, contentDescription = "Coche", tint = Color.White)
-                        }
                         IconButton(onClick = { mostrarIdiomas = true }) {
                             Icon(Icons.Default.Language, contentDescription = "Idioma", tint = Color.White)
-                        }
-                        IconButton(onClick = { mostrarMapa = !mostrarMapa }) {
-                            Icon(
-                                if (mostrarMapa) Icons.Default.List else Icons.Default.Map,
-                                contentDescription = if (mostrarMapa) "Lista" else "Mapa",
-                                tint = Color.White
-                            )
                         }
                         IconButton(onClick = { viewModel.cargar() }) {
                             Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = Color.White)
@@ -152,7 +157,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                     }
                 }
                 BrentWidget(viewModel = brentViewModel, onClick = { mostrarBrent = true })
-                if (!mostrarMapa) {
+                if (tabActual == 0) {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp)
@@ -160,56 +165,235 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                         items(Combustible.entries) { c ->
                             FilterChip(
                                 selected = combustible == c,
-                                onClick = { viewModel.setCombustible(c) },
-                                label = { Text(c.label, fontSize = 13.sp) },
-                                colors = FilterChipDefaults.filterChipColors(
+                                onClick  = { viewModel.setCombustible(c) },
+                                label    = { Text(c.label, fontSize = 13.sp) },
+                                colors   = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color.White,
-                                    selectedLabelColor = EkoGreen40
+                                    selectedLabelColor     = EkoGreen40
                                 )
                             )
                         }
                     }
                 }
             }
+        },
+        bottomBar = {
+            NavigationBar(
+                containerColor = Color(0xFF0D1F0D),
+                tonalElevation = 0.dp
+            ) {
+                val iconos = listOf(
+                    Icons.Default.List to "Lista",
+                    Icons.Default.Map to "Mapa",
+                    Icons.Default.LocationOn to "Historial",
+                    Icons.Default.Settings to "Perfil"
+                )
+                iconos.forEachIndexed { idx, (icon, label) ->
+                    NavigationBarItem(
+                        selected = tabActual == idx,
+                        onClick  = { tabActual = idx },
+                        icon  = { Icon(icon, contentDescription = label) },
+                        label = { Text(label, fontSize = 11.sp) },
+                        colors = NavigationBarItemDefaults.colors(
+                            selectedIconColor   = Color(0xFF69F0AE),
+                            selectedTextColor   = Color(0xFF69F0AE),
+                            unselectedIconColor = Color(0xFF6B8F72),
+                            unselectedTextColor = Color(0xFF6B8F72),
+                            indicatorColor      = Color(0xFF1B5E20)
+                        )
+                    )
+                }
+            }
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (val state = uiState) {
-                is UiState.Loading -> Column(
-                    modifier = Modifier.align(Alignment.Center),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    CircularProgressIndicator(color = EkoGreen40)
-                    Spacer(Modifier.height(12.dp))
-                    Text(androidx.compose.ui.res.stringResource(com.catalabytes.ekopump.R.string.buscando), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            when (tabActual) {
+                1 -> when (val state = uiState) {
+                    is UiState.Success -> MapScreen(
+                        gasolineras = state.data,
+                        combustible = combustible,
+                        userLat = userLat,
+                        userLon = userLon
+                    )
+                    is UiState.Loading -> CircularProgressIndicator(
+                        modifier = Modifier.align(Alignment.Center), color = EkoGreen40)
+                    is UiState.Error   -> Text("⚠ ${state.message}",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = MaterialTheme.colorScheme.error)
                 }
-                is UiState.Error -> Column(
-                    modifier = Modifier.align(Alignment.Center).padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text("⚠️ ${state.message}", color = MaterialTheme.colorScheme.error)
-                    Spacer(Modifier.height(12.dp))
-                    Button(onClick = { viewModel.cargar() },
-                        colors = ButtonDefaults.buttonColors(containerColor = EkoGreen40)
-                    ) { Text("Reintentar") }
-                }
-                is UiState.Success -> {
-                    if (mostrarMapa) {
-                        MapScreen(
-                            gasolineras = state.data,
-                            combustible = combustible,
-                            userLat = userLat,
-                            userLon = userLon
-                        )
-                    } else {
-                        ListaGasolineras(
-                                    lista = state.data,
-                                    combustible = combustible,
-                                    consumo = viewModel.consumo.collectAsState().value,
-                                    litros  = viewModel.litros.collectAsState().value,
-                                    tendencias = viewModel.tendencias.collectAsState().value
-                                )
+                2 -> HistorialPlaceholder()
+                3 -> PerfilScreen(viewModel = viewModel)
+                else -> when (val state = uiState) {
+                    is UiState.Loading -> Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(color = EkoGreen40)
+                        Spacer(Modifier.height(12.dp))
+                        Text(androidx.compose.ui.res.stringResource(
+                            com.catalabytes.ekopump.R.string.buscando),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
+                    is UiState.Error -> Column(
+                        modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("⚠ ${state.message}", color = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.height(12.dp))
+                        Button(onClick = { viewModel.cargar() },
+                            colors = ButtonDefaults.buttonColors(containerColor = EkoGreen40)
+                        ) { Text("Reintentar") }
+                    }
+                    is UiState.Success -> ListaGasolineras(
+                        lista       = state.data,
+                        combustible = combustible,
+                        consumo     = viewModel.consumo.collectAsState().value,
+                        litros      = viewModel.litros.collectAsState().value,
+                        tendencias  = viewModel.tendencias.collectAsState().value
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun HistorialPlaceholder() {
+    Column(
+        modifier = Modifier.fillMaxSize().background(Color(0xFF0D1F0D)),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text("📊", fontSize = 56.sp)
+        Spacer(Modifier.height(16.dp))
+        Text("Historial de repostajes", fontWeight = FontWeight.ExtraBold,
+            fontSize = 22.sp, color = Color.White)
+        Spacer(Modifier.height(8.dp))
+        Text("Próximamente", fontSize = 14.sp, color = Color(0xFF69F0AE))
+        Spacer(Modifier.height(4.dp))
+        Text(
+            "Cada repostaje quedará registrado aquí con gasto, ahorro y gasolinera.",
+            fontSize = 13.sp, color = Color(0xFF6B8F72),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        )
+    }
+}
+
+@Composable
+fun PerfilScreen(viewModel: GasolinerasViewModel) {
+    val consumo     by viewModel.consumo.collectAsState()
+    val litros      by viewModel.litros.collectAsState()
+    val vehicleType by viewModel.vehicleType.collectAsState()
+    val verde    = Color(0xFF69F0AE)
+    val darkBg   = Color(0xFF0D1F0D)
+    val darkCard = Color(0xFF162916)
+    val grayText = Color(0xFFB0BEC5)
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(darkBg)
+            .padding(20.dp)
+            .verticalScroll(androidx.compose.foundation.rememberScrollState()),
+        verticalArrangement = Arrangement.spacedBy(20.dp)
+    ) {
+        Spacer(Modifier.height(8.dp))
+        Text("🚗 Mi vehículo", fontWeight = FontWeight.ExtraBold,
+            fontSize = 24.sp, color = Color.White)
+        Text("¿Qué conduces?", fontSize = 13.sp, color = grayText)
+
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            com.catalabytes.ekopump.domain.model.VehicleType.entries.forEach { tipo ->
+                val sel = vehicleType == tipo
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(if (sel) verde.copy(alpha = 0.15f) else darkCard)
+                        .border(1.5.dp,
+                            if (sel) verde else Color.White.copy(alpha = 0.1f),
+                            RoundedCornerShape(12.dp))
+                        .clickable {
+                            viewModel.setVehicleType(tipo)
+                            viewModel.setConsumo(tipo.consumoDefault)
+                            viewModel.setLitros(tipo.litrosDefault)
+                        }
+                        .padding(vertical = 10.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(tipo.emoji, fontSize = 22.sp)
+                        Text(tipo.labelEs, fontSize = 10.sp, fontWeight = FontWeight.SemiBold,
+                            color = if (sel) verde else grayText,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                    }
+                }
+            }
+        }
+
+        // Consumo
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                .background(darkCard).padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                Text("Consumo", fontSize = 13.sp, color = grayText)
+                Text("${"%.1f".format(consumo)} L/100km", fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold, color = verde)
+            }
+            Slider(value = consumo, onValueChange = { viewModel.setConsumo(it) },
+                valueRange = vehicleType.consumoMin..vehicleType.consumoMax,
+                colors = SliderDefaults.colors(thumbColor = verde, activeTrackColor = verde,
+                    inactiveTrackColor = Color.White.copy(alpha = 0.15f)))
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                Text("${vehicleType.consumoMin.toInt()}L", fontSize = 10.sp, color = grayText)
+                Text("${vehicleType.consumoMax.toInt()}L", fontSize = 10.sp, color = grayText)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                vehicleType.quickConsumos.forEach { v ->
+                    val s = consumo == v
+                    Box(Modifier.clip(RoundedCornerShape(8.dp))
+                        .background(if (s) verde else Color.White.copy(0.07f))
+                        .border(1.dp, if (s) verde else Color.White.copy(0.15f), RoundedCornerShape(8.dp))
+                        .clickable { viewModel.setConsumo(v) }
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) { Text("${v.toInt()}L", fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        color = if (s) Color(0xFF0D1F0D) else grayText) }
+                }
+            }
+        }
+
+        // Litros
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                .background(darkCard).padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
+                Text("Litros a repostar", fontSize = 13.sp, color = grayText)
+                Text("${"%.0f".format(litros)} L", fontSize = 15.sp,
+                    fontWeight = FontWeight.ExtraBold, color = verde)
+            }
+            Slider(value = litros, onValueChange = { viewModel.setLitros(it) },
+                valueRange = vehicleType.litrosMin..vehicleType.litrosMax,
+                colors = SliderDefaults.colors(thumbColor = verde, activeTrackColor = verde,
+                    inactiveTrackColor = Color.White.copy(alpha = 0.15f)))
+            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                Text("${vehicleType.litrosMin.toInt()}L", fontSize = 10.sp, color = grayText)
+                Text("${vehicleType.litrosMax.toInt()}L", fontSize = 10.sp, color = grayText)
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                vehicleType.quickLitros.forEach { v ->
+                    val s = litros == v
+                    Box(Modifier.clip(RoundedCornerShape(8.dp))
+                        .background(if (s) verde else Color.White.copy(0.07f))
+                        .border(1.dp, if (s) verde else Color.White.copy(0.15f), RoundedCornerShape(8.dp))
+                        .clickable { viewModel.setLitros(v) }
+                        .padding(horizontal = 10.dp, vertical = 5.dp)
+                    ) { Text("${v.toInt()}L", fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                        color = if (s) Color(0xFF0D1F0D) else grayText) }
                 }
             }
         }
