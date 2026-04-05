@@ -49,6 +49,7 @@ import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.ui.theme.EkoPumpTheme
 import com.catalabytes.ekopump.viewmodel.GasolinerasViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import com.catalabytes.ekopump.ui.onboarding.OnboardingScreen
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -62,7 +63,23 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContent { EkoPumpTheme { GasolinerasScreen() } }
+        setContent { EkoPumpTheme { EkoPumpApp() } }
+    }
+}
+
+
+@Composable
+fun EkoPumpApp() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val prefs = context.getSharedPreferences("ekopump_onboarding", android.content.Context.MODE_PRIVATE)
+    var onboardingCompletado by remember { mutableStateOf(prefs.getBoolean("completado", false)) }
+    if (!onboardingCompletado) {
+        OnboardingScreen(onFinish = {
+            prefs.edit().putBoolean("completado", true).apply()
+            onboardingCompletado = true
+        })
+    } else {
+        GasolinerasScreen()
     }
 }
 
