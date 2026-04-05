@@ -206,7 +206,8 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
                                     lista = state.data,
                                     combustible = combustible,
                                     consumo = viewModel.consumo.collectAsState().value,
-                                    litros  = viewModel.litros.collectAsState().value
+                                    litros  = viewModel.litros.collectAsState().value,
+                                    tendencias = viewModel.tendencias.collectAsState().value
                                 )
                     }
                 }
@@ -216,7 +217,7 @@ fun GasolinerasScreen(viewModel: GasolinerasViewModel = hiltViewModel(), brentVi
 }
 
 @Composable
-fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustible, consumo: Float, litros: Float) {
+fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustible, consumo: Float, litros: Float, tendencias: Map<String, com.catalabytes.ekopump.domain.model.TendenciaPrecio> = emptyMap()) {
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
         item {
             Text(
@@ -237,7 +238,8 @@ fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustib
                 precioRef   = precioRef,
                 kmRef       = kmRef,
                 consumo     = consumo.toDouble(),
-                litros      = litros.toDouble()
+                litros      = litros.toDouble(),
+                tendencia   = tendencias[lista[i].gasolinera.id] ?: com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE
             )
         }
     }
@@ -251,7 +253,8 @@ fun GasolineraItem(
     precioRef: Double?,
     kmRef: Double,
     consumo: Double,
-    litros: Double
+    litros: Double,
+    tendencia: com.catalabytes.ekopump.domain.model.TendenciaPrecio = com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val g = item.gasolinera
@@ -312,14 +315,32 @@ fun GasolineraItem(
             }
             Spacer(Modifier.width(8.dp))
             precio?.let {
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(if (esMasBarata) EkoGreen40 else MaterialTheme.colorScheme.primary)
-                        .padding(horizontal = 10.dp, vertical = 6.dp)
-                ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    // Badge tendencia ↑↓→
+                    val (badgeText, badgeColor) = when (tendencia) {
+                        com.catalabytes.ekopump.domain.model.TendenciaPrecio.SUBE ->
+                            "↑" to androidx.compose.ui.graphics.Color(0xFFB71C1C)
+                        com.catalabytes.ekopump.domain.model.TendenciaPrecio.BAJA ->
+                            "↓" to androidx.compose.ui.graphics.Color(0xFF2E7D32)
+                        com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE ->
+                            "→" to androidx.compose.ui.graphics.Color(0xFF9E9E9E)
+                    }
+                    Text(
+                        badgeText,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.ExtraBold,
+                        color = badgeColor,
+                        modifier = Modifier.padding(bottom = 2.dp)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(if (esMasBarata) EkoGreen40 else MaterialTheme.colorScheme.primary)
+                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                    ) {
                     Text("${"%.3f".format(it)}€", fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp, color = Color.White)
+                    }
                 }
             }
         }
