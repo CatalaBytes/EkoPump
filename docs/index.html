@@ -315,6 +315,24 @@
     .footer-links a:hover { color: var(--green); }
     .footer-copy { font-size: 0.8rem; color: var(--muted); }
 
+
+    /* LANG SWITCHER */
+    .lang-switcher {
+      display: flex; align-items: center; gap: 2px;
+      background: rgba(34,197,94,0.07);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 8px; padding: 3px;
+    }
+    .lang-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: 0.75rem; font-weight: 600;
+      padding: 0.25rem 0.5rem; border-radius: 5px;
+      letter-spacing: 0.04em; transition: background 0.15s, color 0.15s;
+      font-family: 'Barlow Condensed', sans-serif;
+    }
+    .lang-btn:hover { color: var(--green); background: rgba(34,197,94,0.1); }
+    .lang-btn.active { background: var(--green); color: #052e16; }
+    @media(max-width:640px) { .lang-switcher { display: none; } }
     /* MOBILE NAV */
     @media(max-width: 640px) {
       .nav-links { display: none; }
@@ -335,30 +353,35 @@
 <nav>
   <div class="logo">Eko<span>Pump</span></div>
   <ul class="nav-links">
-    <li><a href="#funciones">Funciones</a></li>
-    <li><a href="#historial">Historial</a></li>
-    <li><a href="#como-funciona">Cómo funciona</a></li>
-    <li><a href="#privacidad">Privacidad</a></li>
+    <li><a href="#funciones" data-i18n="nav-features">Funciones</a></li>
+    <li><a href="#historial" data-i18n="nav-historial">Historial</a></li>
+    <li><a href="#como-funciona" data-i18n="nav-howto">Cómo funciona</a></li>
+    <li><a href="#privacidad" data-i18n="nav-privacy">Privacidad</a></li>
   </ul>
-  <a href="https://play.google.com/store" class="nav-cta">DESCARGAR</a>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <div class="lang-switcher" id="langSwitcher">
+      <button class="lang-btn" data-lang="es" title="Español">🇪🇸 ES</button>
+      <button class="lang-btn" data-lang="ca" title="Català">CA</button>
+      <button class="lang-btn" data-lang="eu" title="Euskera">EU</button>
+      <button class="lang-btn" data-lang="gl" title="Galego">GL</button>
+      <button class="lang-btn" data-lang="en" title="English">🇬🇧 EN</button>
+    </div>
+    <a href="https://play.google.com/apps/internaltest/4701246384116421108" class="nav-cta" data-i18n="nav-cta">DESCARGAR</a>
+  </div>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
   <div class="hero-eyebrow">
     <span class="dot"></span>
-    Precio Brent en tiempo real
+    <span data-i18n="hero-eyebrow">Precio Brent en tiempo real</span>
   </div>
-  <h1>Para de pagar<br /><em>de más</em><br />en gasolina.</h1>
-  <p class="hero-sub">
-    EkoPump localiza la gasolinera más barata cerca de ti,
-    calcula tu ahorro real y sigue el precio del petróleo
-    para que siempre repostes en el momento justo.
-  </p>
+  <h1 data-i18n="hero-h1">Para de pagar<br /><em>de más</em><br />en gasolina.</h1>
+  <p class="hero-sub" data-i18n="hero-sub">EkoPump localiza la gasolinera más barata cerca de ti, calcula tu ahorro real y sigue el precio del petróleo para que siempre repostes en el momento justo.</p>
   <div class="hero-actions">
     <a href="https://play.google.com/store" class="btn-primary">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76a2 2 0 0 0 2.72.76l12.3-7.11-3.4-3.41zM.5 1.22A2 2 0 0 0 0 2.5v19a2 2 0 0 0 .5 1.28L.6 22.9l10.64-10.64v-.25L.6 1.34zM20.3 10.27l-2.92-1.69L14 12l3.37 3.37 2.93-1.7a2 2 0 0 0 0-3.4zM5.9.48.6 11.5v.24L11.24 1.1 8.62-.52A2 2 0 0 0 5.9.48z"/></svg>
-      Google Play
+      <span data-i18n="hero-cta">Google Play</span>
     </a>
     <a href="https://github.com/CatalaBytes/EkoPump" class="btn-ghost">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58v-2.03c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.25 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.81 5.63-5.49 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.21.69.82.57A12 12 0 0 0 12 .3z"/></svg>
@@ -513,18 +536,18 @@
     <div class="steps">
       <div class="step fade-up">
         <span class="step-num">01</span>
-        <h3>Abre la app</h3>
-        <p>GPS automático. No hace falta configurar nada. En 3 segundos ya tienes los precios de tu zona.</p>
+        <h3 data-i18n="step1-title">Abre la app</h3>
+        <p data-i18n="step1-text">GPS automático. No hace falta configurar nada. En 3 segundos ya tienes los precios de tu zona.</p>
       </div>
       <div class="step fade-up">
         <span class="step-num">02</span>
-        <h3>Compara precios</h3>
-        <p>Lista ordenada por precio + distancia. El ahorro en verde llamativo. Sabes cuánto te cuesta cada opción.</p>
+        <h3 data-i18n="step2-title">Compara precios</h3>
+        <p data-i18n="step2-text">Lista ordenada por precio + distancia. El ahorro en verde llamativo. Sabes cuánto te cuesta cada opción.</p>
       </div>
       <div class="step fade-up">
         <span class="step-num">03</span>
-        <h3>Reposta y ahorra</h3>
-        <p>Ve a la gasolinera barata. EkoPump registra cuánto has ahorrado con el tiempo. Los céntimos suman.</p>
+        <h3 data-i18n="step3-title">Reposta y ahorra</h3>
+        <p data-i18n="step3-text">Ve a la gasolinera barata. EkoPump registra cuánto has ahorrado con el tiempo. Los céntimos suman.</p>
       </div>
     </div>
   </div>
@@ -917,9 +940,30 @@
         <p style="color:#f0fdf4;font-weight:600;margin-bottom:0.25rem;">¿Quieres ser tester?</p>
         <p style="color:#6b8f72;font-size:0.85rem;">Acceso anticipado a todas las funciones en desarrollo.</p>
       </div>
-      <a href="mailto:hola@ekopump.es?subject=Quiero ser tester de EkoPump" style="background:#22c55e;color:#052e16;padding:0.75rem 1.5rem;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-decoration:none;letter-spacing:0.05em;white-space:nowrap;">UNIRME A LA BETA</a>
+      <a href="https://play.google.com/apps/internaltest/4701246384116421108" target="_blank" rel="noopener" style="background:#22c55e;color:#052e16;padding:0.75rem 1.5rem;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:700;text-decoration:none;letter-spacing:0.05em;white-space:nowrap;">UNIRME A LA BETA</a>
     </div>
 
+  </div>
+</section>
+
+<!-- BETA -->
+<section id="beta" style="padding:4rem 1.5rem;background:#0d1a0f;border-top:2px solid rgba(34,197,94,0.4);">
+  <div style="max-width:700px;margin:0 auto;text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:0.5rem;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:0.4rem 1rem;border-radius:999px;font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:1.5rem;">
+      <span style="width:7px;height:7px;border-radius:50%;background:#22c55e;display:inline-block;animation:pulse 2s infinite;"></span>
+      Acceso anticipado
+    </div>
+    <h2 style="font-family:'Barlow Condensed',sans-serif;font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;color:#f0fdf4;line-height:1;margin-bottom:1rem;" data-i18n="beta-title">Únete a la <em style="color:#22c55e;">beta.</em></h2>
+    <p style="color:#6b8f72;font-size:1.05rem;margin-bottom:2rem;line-height:1.65;" data-i18n="beta-sub">Prueba EkoPump antes que nadie. Acceso directo desde Google Play — sin esperas ni formularios.</p>
+    <a href="https://play.google.com/apps/internaltest/4701246384116421108"
+       target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:0.75rem;background:#22c55e;color:#052e16;padding:1rem 2.5rem;border-radius:10px;font-family:'Barlow Condensed',sans-serif;font-size:1.25rem;font-weight:800;letter-spacing:0.06em;text-decoration:none;transition:background 0.2s,transform 0.15s;box-shadow:0 0 24px rgba(34,197,94,0.25);"
+       onmouseover="this.style.background='#4ade80';this.style.transform='translateY(-2px)'"
+       onmouseout="this.style.background='#22c55e';this.style.transform='none'">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3.18 23.76a2 2 0 0 0 2.72.76l12.3-7.11-3.4-3.41zM.5 1.22A2 2 0 0 0 0 2.5v19a2 2 0 0 0 .5 1.28L.6 22.9l10.64-10.64v-.25L.6 1.34zM20.3 10.27l-2.92-1.69L14 12l3.37 3.37 2.93-1.7a2 2 0 0 0 0-3.4zM5.9.48.6 11.5v.24L11.24 1.1 8.62-.52A2 2 0 0 0 5.9.48z"/></svg>
+      <span data-i18n="beta-btn">ÚNETE A LA BETA</span>
+    </a>
+    <p style="color:#6b8f72;font-size:0.78rem;margin-top:1rem;" data-i18n="beta-note">Solo Android · Google Play · Gratis</p>
   </div>
 </section>
 
@@ -934,10 +978,154 @@
 </footer>
 
 <script>
-  const obs = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+// ── Scroll animations ──────────────────────────────────────────────────────
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => obs.observe(el));
+
+// ── i18n ───────────────────────────────────────────────────────────────────
+const T = {
+  es: {
+    'nav-features': 'Funciones',
+    'nav-historial': 'Historial',
+    'nav-howto': 'Cómo funciona',
+    'nav-privacy': 'Privacidad',
+    'nav-cta': 'DESCARGAR',
+    'hero-eyebrow': 'Precio Brent en tiempo real',
+    'hero-h1': 'Para de pagar<br/><em>de más</em><br/>en gasolina.',
+    'hero-sub': 'EkoPump localiza la gasolinera más barata cerca de ti, calcula tu ahorro real y sigue el precio del petróleo para que siempre repostes en el momento justo.',
+    'hero-cta': 'Google Play',
+    'step1-title': 'Abre la app',
+    'step1-text': 'GPS automático. No hace falta configurar nada. En 3 segundos ya tienes los precios de tu zona.',
+    'step2-title': 'Compara precios',
+    'step2-text': 'Lista ordenada por precio + distancia. El ahorro en verde llamativo. Sabes cuánto te cuesta cada opción.',
+    'step3-title': 'Reposta y ahorra',
+    'step3-text': 'Ve a la gasolinera barata. EkoPump registra cuánto has ahorrado con el tiempo. Los céntimos suman.',
+    'beta-title': 'Únete a la <em style="color:#22c55e;">beta.</em>',
+    'beta-sub': 'Prueba EkoPump antes que nadie. Acceso directo desde Google Play — sin esperas ni formularios.',
+    'beta-btn': 'ÚNETE A LA BETA',
+    'beta-note': 'Solo Android · Google Play · Gratis',
+  },
+  ca: {
+    'nav-features': 'Funcions',
+    'nav-historial': 'Historial',
+    'nav-howto': 'Com funciona',
+    'nav-privacy': 'Privacitat',
+    'nav-cta': 'DESCARREGA',
+    'hero-eyebrow': 'Preu Brent en temps real',
+    'hero-h1': 'Deixa de pagar<br/><em>de més</em><br/>en gasolina.',
+    'hero-sub': 'EkoPump localitza la gasolinera més barata prop teu, calcula el teu estalvi real i segueix el preu del petroli perquè sempre repostis en el moment just.',
+    'hero-cta': 'Google Play',
+    'step1-title': "Obre l'app",
+    'step1-text': 'GPS automàtic. No cal configurar res. En 3 segons ja tens els preus de la teva zona.',
+    'step2-title': 'Compara preus',
+    'step2-text': "Llista ordenada per preu + distància. L'estalvi en verd. Saps quant et costa cada opció.",
+    'step3-title': 'Reposta i estalvia',
+    'step3-text': "Vés a la gasolinera barata. EkoPump registra quant has estalviat amb el temps. Els cèntims sumen.",
+    'beta-title': 'Uneix-te a la <em style="color:#22c55e;">beta.</em>',
+    'beta-sub': "Prova EkoPump abans que ningú. Accés directe des de Google Play — sense esperes ni formularis.",
+    'beta-btn': 'UNEIX-TE A LA BETA',
+    'beta-note': 'Només Android · Google Play · Gratuït',
+  },
+  eu: {
+    'nav-features': 'Funtzioak',
+    'nav-historial': 'Historia',
+    'nav-howto': 'Nola funtzionatzen du',
+    'nav-privacy': 'Pribatutasuna',
+    'nav-cta': 'DESKARGATU',
+    'hero-eyebrow': 'Brent prezioa denbora errealean',
+    'hero-h1': 'Utzi gehiegi<br/><em>ordaintzeari</em><br/>gasolinarekin.',
+    'hero-sub': 'EkoPump-ek inguruko gasolindegirik merkeenak aurkitzen ditu, zure benetako aurrezkia kalkulatzen du eta petrolioaren prezioa jarraitzen du unean uneko erreposteraketa egiteko.',
+    'hero-cta': 'Google Play',
+    'step1-title': 'Ireki aplikazioa',
+    'step1-text': 'GPS automatikoa. Ez da ezarpen berezirik behar. 3 segundotan zure eremuaren prezioak dituzu.',
+    'step2-title': 'Alderatu prezioak',
+    'step2-text': 'Prezioaren araberako zerrenda + distantzia. Aurrezkia berdean. Aukera bakoitzak zenbat balio duen jakingo duzu.',
+    'step3-title': 'Errepostatu eta aurreztu',
+    'step3-text': "Joan gasolindegirik merkeenera. EkoPump-ek zenbat aurreztu duzun erregistratzen du. Zentimoak gehitzen dira.",
+    'beta-title': 'Sartu <em style="color:#22c55e;">betatik.</em>',
+    'beta-sub': 'Probatu EkoPump inork baino lehen. Sarrera zuzena Google Play-tik — itxaronik eta inprimakienik gabe.',
+    'beta-btn': 'BETARA SARTU',
+    'beta-note': 'Android soilik · Google Play · Doakoa',
+  },
+  gl: {
+    'nav-features': 'Funcións',
+    'nav-historial': 'Historial',
+    'nav-howto': 'Como funciona',
+    'nav-privacy': 'Privacidade',
+    'nav-cta': 'DESCARGAR',
+    'hero-eyebrow': 'Prezo Brent en tempo real',
+    'hero-h1': 'Para de pagar<br/><em>de máis</em><br/>en gasolina.',
+    'hero-sub': 'EkoPump localiza a gasolineira máis barata preto de ti, calcula o teu aforro real e segue o prezo do petróleo para que sempre repostes no momento xusto.',
+    'hero-cta': 'Google Play',
+    'step1-title': 'Abre a app',
+    'step1-text': 'GPS automático. Non hai que configurar nada. En 3 segundos xa tes os prezos da túa zona.',
+    'step2-title': 'Compara prezos',
+    'step2-text': 'Lista ordenada por prezo + distancia. O aforro en verde. Sabes canto che custa cada opción.',
+    'step3-title': 'Reposta e aforra',
+    'step3-text': 'Vai á gasolineira barata. EkoPump rexistra canto aforraches co tempo. Os céntimos suman.',
+    'beta-title': 'Únete á <em style="color:#22c55e;">beta.</em>',
+    'beta-sub': 'Proba EkoPump antes que ninguén. Acceso directo desde Google Play — sen esperas nin formularios.',
+    'beta-btn': 'ÚNETE Á BETA',
+    'beta-note': 'Só Android · Google Play · Gratis',
+  },
+  en: {
+    'nav-features': 'Features',
+    'nav-historial': 'History',
+    'nav-howto': 'How it works',
+    'nav-privacy': 'Privacy',
+    'nav-cta': 'DOWNLOAD',
+    'hero-eyebrow': 'Brent price in real time',
+    'hero-h1': 'Stop paying<br/><em>too much</em><br/>for fuel.',
+    'hero-sub': 'EkoPump finds the cheapest petrol station near you, calculates your real savings and tracks oil prices so you always refuel at the right moment.',
+    'hero-cta': 'Google Play',
+    'step1-title': 'Open the app',
+    'step1-text': 'Automatic GPS. No setup needed. In 3 seconds you have live prices for your area.',
+    'step2-title': 'Compare prices',
+    'step2-text': 'Sorted by price + distance. Savings highlighted in green. You know exactly what each option costs.',
+    'step3-title': 'Refuel and save',
+    'step3-text': "Go to the cheapest station. EkoPump tracks how much you've saved over time. Every cent counts.",
+    'beta-title': 'Join the <em style="color:#22c55e;">beta.</em>',
+    'beta-sub': 'Try EkoPump before anyone else. Direct access from Google Play — no waiting, no forms.',
+    'beta-btn': 'JOIN THE BETA',
+    'beta-note': 'Android only · Google Play · Free',
+  }
+};
+
+function detectLang() {
+  const saved = localStorage.getItem('ekopump_lang');
+  if (saved && T[saved]) return saved;
+  const nav = (navigator.language || navigator.userLanguage || 'es').toLowerCase();
+  if (nav.startsWith('ca')) return 'ca';
+  if (nav.startsWith('eu')) return 'eu';
+  if (nav.startsWith('gl')) return 'gl';
+  if (nav.startsWith('en')) return 'en';
+  return 'es';
+}
+
+function applyLang(lang) {
+  const strings = T[lang] || T['es'];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.getAttribute('data-i18n');
+    if (strings[key] !== undefined) el.innerHTML = strings[key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+  document.documentElement.lang = lang === 'ca' ? 'ca' : lang === 'eu' ? 'eu' : lang === 'gl' ? 'gl' : lang === 'en' ? 'en' : 'es';
+}
+
+const currentLang = detectLang();
+applyLang(currentLang);
+
+document.querySelectorAll('.lang-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const lang = btn.dataset.lang;
+    localStorage.setItem('ekopump_lang', lang);
+    applyLang(lang);
+  });
+});
 </script>
 
 </body>
