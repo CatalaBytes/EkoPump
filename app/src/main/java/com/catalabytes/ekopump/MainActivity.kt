@@ -33,10 +33,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.catalabytes.ekopump.data.local.entity.RefuelEntity
 import com.catalabytes.ekopump.data.prefs.LocaleHelper
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.ui.common.UiState
+import com.catalabytes.ekopump.ui.history.AddRefuelSheet
+import com.catalabytes.ekopump.ui.history.HistoryScreen
+import com.catalabytes.ekopump.ui.history.HistoryViewModel
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
 import com.catalabytes.ekopump.ui.settings.CalculadorDialog
@@ -59,6 +63,9 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.border
 import com.catalabytes.ekopump.ui.onboarding.OnboardingScreen
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -95,13 +102,17 @@ fun EkoPumpApp() {
 @Composable
 fun GasolinerasScreen(
     viewModel: GasolinerasViewModel = hiltViewModel(),
-    brentViewModel: BrentViewModel = hiltViewModel()
+    brentViewModel: BrentViewModel = hiltViewModel(),
+    historyViewModel: HistoryViewModel = hiltViewModel()
 ) {
     val uiState     by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
     var tabActual   by remember { mutableStateOf(0) }
     var mostrarIdiomas  by remember { mutableStateOf(false) }
     var mostrarBrent    by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState) { isRefreshing = false }
     val userLat by viewModel.userLat.collectAsState()
     val userLon by viewModel.userLon.collectAsState()
 
@@ -183,9 +194,9 @@ fun GasolinerasScreen(
                 tonalElevation = 0.dp
             ) {
                 val iconos = listOf(
-                    Icons.Default.List to "Lista",
-                    Icons.Default.Map to "Mapa",
-                    Icons.Default.LocationOn to "Historial",
+                    Icons.Default.List    to "Lista",
+                    Icons.Default.Map     to "Mapa",
+                    Icons.Default.History to "Historial",
                     Icons.Default.Settings to "Perfil"
                 )
                 iconos.forEachIndexed { idx, (icon, label) ->
@@ -221,7 +232,7 @@ fun GasolinerasScreen(
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.error)
                 }
-                2 -> HistorialPlaceholder()
+                2 -> HistoryScreen(viewModel = historyViewModel)
                 3 -> PerfilScreen(viewModel = viewModel)
                 else -> when (val state = uiState) {
                     is UiState.Loading -> Column(
@@ -245,38 +256,18 @@ fun GasolinerasScreen(
                         ) { Text("Reintentar") }
                     }
                     is UiState.Success -> ListaGasolineras(
-                        lista       = state.data,
-                        combustible = combustible,
-                        consumo     = viewModel.consumo.collectAsState().value,
-                        litros      = viewModel.litros.collectAsState().value,
-                        tendencias  = viewModel.tendencias.collectAsState().value
+                        lista        = state.data,
+                        combustible  = combustible,
+                        consumo      = viewModel.consumo.collectAsState().value,
+                        litros       = viewModel.litros.collectAsState().value,
+                        tendencias   = viewModel.tendencias.collectAsState().value,
+                        onRepostar   = { historyViewModel.addRefuel(it) },
+                        isRefreshing = isRefreshing,
+                        onRefresh    = { isRefreshing = true; viewModel.cargar() }
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun HistorialPlaceholder() {
-    Column(
-        modifier = Modifier.fillMaxSize().background(Color(0xFF0D1F0D)),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text("📊", fontSize = 56.sp)
-        Spacer(Modifier.height(16.dp))
-        Text("Historial de repostajes", fontWeight = FontWeight.ExtraBold,
-            fontSize = 22.sp, color = Color.White)
-        Spacer(Modifier.height(8.dp))
-        Text("Próximamente", fontSize = 14.sp, color = Color(0xFF69F0AE))
-        Spacer(Modifier.height(4.dp))
-        Text(
-            "Cada repostaje quedará registrado aquí con gasto, ahorro y gasolinera.",
-            fontSize = 13.sp, color = Color(0xFF6B8F72),
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.padding(horizontal = 32.dp)
-        )
     }
 }
 
@@ -401,7 +392,22 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
 }
 
 @Composable
-fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustible, consumo: Float, litros: Float, tendencias: Map<String, com.catalabytes.ekopump.domain.model.TendenciaPrecio> = emptyMap()) {
+@OptIn(ExperimentalMaterial3Api::class)
+fun ListaGasolineras(
+    lista: List<GasolineraConDistancia>,
+    combustible: Combustible,
+    consumo: Float,
+    litros: Float,
+    tendencias: Map<String, com.catalabytes.ekopump.domain.model.TendenciaPrecio> = emptyMap(),
+    onRepostar: (RefuelEntity) -> Unit = {},
+    isRefreshing: Boolean = false,
+    onRefresh: () -> Unit = {}
+) {
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh    = onRefresh,
+        modifier     = Modifier.fillMaxSize()
+    ) {
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
         item {
             Text(
@@ -423,10 +429,12 @@ fun ListaGasolineras(lista: List<GasolineraConDistancia>, combustible: Combustib
                 kmRef       = kmRef,
                 consumo     = consumo.toDouble(),
                 litros      = litros.toDouble(),
-                tendencia   = tendencias[lista[i].gasolinera.id] ?: com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE
+                tendencia   = tendencias[lista[i].gasolinera.id] ?: com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE,
+                onRepostar  = onRepostar
             )
         }
     }
+    } // cierre PullToRefreshBox
 }
 
 @Composable
@@ -438,16 +446,34 @@ fun GasolineraItem(
     kmRef: Double,
     consumo: Double,
     litros: Double,
-    tendencia: com.catalabytes.ekopump.domain.model.TendenciaPrecio = com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE
+    tendencia: com.catalabytes.ekopump.domain.model.TendenciaPrecio = com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE,
+    onRepostar: (RefuelEntity) -> Unit = {}
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val g = item.gasolinera
     val esMasBarata = posicion == 1
     val precio = combustible.precio(g)
+    var mostrarSheet by remember { mutableStateOf(false) }
+
     val ahorro = if (posicion > 1 && precio != null && precioRef != null && precioRef > 0) {
         val kmExtra = ((item.distanciaKm ?: 0.0) - kmRef).coerceAtLeast(0.0)
         com.catalabytes.ekopump.domain.calcularAhorro(precioRef, precio, kmExtra, consumo, litros)
     } else null
+
+    // BottomSheet repostaje
+    if (mostrarSheet && precio != null) {
+        AddRefuelSheet(
+            stationName      = g.nombre,
+            stationAddress   = g.direccion,
+            fuelType         = combustible.label,
+            pricePerLiter    = precio,
+            avgNationalPrice = precioRef ?: precio,
+            latitude         = g.latitud,
+            longitude        = g.longitud,
+            onSave           = onRepostar,
+            onDismiss        = { mostrarSheet = false }
+        )
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp)
@@ -482,7 +508,6 @@ fun GasolineraItem(
                         color = MaterialTheme.colorScheme.primary
                     )
                 }
-                // Chip ahorro/coste vs gasolinera más cercana
                 ahorro?.let { a ->
                     val (label, color) = if (a.valeLaPena)
                         "✅ Ahorras ${"%.2f".format(a.beneficioNeto)}€" to androidx.compose.ui.graphics.Color(0xFF2E7D32)
@@ -498,32 +523,49 @@ fun GasolineraItem(
                 }
             }
             Spacer(Modifier.width(8.dp))
-            precio?.let {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    // Badge tendencia ↑↓→
-                    val (badgeText, badgeColor) = when (tendencia) {
-                        com.catalabytes.ekopump.domain.model.TendenciaPrecio.SUBE ->
-                            "↑" to androidx.compose.ui.graphics.Color(0xFFB71C1C)
-                        com.catalabytes.ekopump.domain.model.TendenciaPrecio.BAJA ->
-                            "↓" to androidx.compose.ui.graphics.Color(0xFF2E7D32)
-                        com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE ->
-                            "→" to androidx.compose.ui.graphics.Color(0xFF9E9E9E)
-                    }
-                    Text(
-                        badgeText,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = badgeColor,
-                        modifier = Modifier.padding(bottom = 2.dp)
-                    )
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(6.dp)
+            ) {
+                // Botón ⛽ Repostar aquí
+                if (precio != null) {
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(8.dp))
-                            .background(if (esMasBarata) EkoGreen40 else MaterialTheme.colorScheme.primary)
-                            .padding(horizontal = 10.dp, vertical = 6.dp)
+                            .background(EkoGreen40.copy(alpha = 0.15f))
+                            .clickable { mostrarSheet = true }
+                            .padding(horizontal = 8.dp, vertical = 6.dp),
+                        contentAlignment = Alignment.Center
                     ) {
-                    Text("${"%.3f".format(it)}€", fontWeight = FontWeight.ExtraBold,
-                        fontSize = 16.sp, color = Color.White)
+                        Text("⛽", fontSize = 18.sp)
+                    }
+                }
+                precio?.let {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        val (badgeText, badgeColor) = when (tendencia) {
+                            com.catalabytes.ekopump.domain.model.TendenciaPrecio.SUBE ->
+                                "↑" to androidx.compose.ui.graphics.Color(0xFFB71C1C)
+                            com.catalabytes.ekopump.domain.model.TendenciaPrecio.BAJA ->
+                                "↓" to androidx.compose.ui.graphics.Color(0xFF2E7D32)
+                            com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE ->
+                                "→" to androidx.compose.ui.graphics.Color(0xFF9E9E9E)
+                        }
+                        Text(
+                            badgeText,
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = badgeColor,
+                            modifier = Modifier.padding(bottom = 2.dp)
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (esMasBarata) EkoGreen40 else MaterialTheme.colorScheme.primary)
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Text("${"%.3f".format(it)}€", fontWeight = FontWeight.ExtraBold,
+                                fontSize = 16.sp, color = Color.White)
+                        }
                     }
                 }
             }

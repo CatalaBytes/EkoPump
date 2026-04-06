@@ -16,14 +16,15 @@ import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
+import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
+import org.maplibre.android.style.expressions.Expression.*
+import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.PropertyFactory.*
 import org.maplibre.android.style.layers.SymbolLayer
+import org.maplibre.android.style.sources.GeoJsonOptions
 import org.maplibre.android.style.sources.GeoJsonSource
-import org.maplibre.geojson.Feature
-import org.maplibre.geojson.FeatureCollection
-import org.maplibre.geojson.Point
 
 @Composable
 fun MapScreen(
@@ -41,47 +42,103 @@ fun MapScreen(
             MapView(ctx).apply {
                 getMapAsync { map ->
                     map.setStyle("https://demotiles.maplibre.org/style.json") { style ->
+
                         map.cameraPosition = CameraPosition.Builder()
                             .target(LatLng(userLat, userLon))
                             .zoom(12.0)
                             .build()
 
-                        // Crear un icono por gasolinera con el precio incluido en el bitmap
-                        val features = gasolineras.take(150)
-                            .filter { it.gasolinera.latitud != 0.0 }
-                            .mapIndexed { idx, item ->
-                                val g = item.gasolinera
-                                val precio = combustible.precio(g)
-                                val precioStr = precio?.let { "${"%.3f".format(it)}€" } ?: "—"
-                                val esBarata  = idx == 0
+                        // ── 1. Bitmaps para puntos individuales ──────────────────
+                        gasolineras.forEachIndexed { idx, item ->
+                            val g = item.gasolinera
+                            val precio = combustible.precio(g)
+                            val precioStr = precio?.let { "${"%.3f".format(it)}€" } ?: "—"
+                            style.addImage("pin_$idx", crearMarcadorConPrecio(precioStr, item.esMasCercana))
+                        }
 
-                                // Icono único con precio embebido
-                                val iconKey = "pin_$idx"
-                                val bitmap  = crearMarcadorConPrecio(precioStr, esBarata)
-                                style.addImage(iconKey, bitmap)
-
-                                Feature.fromGeometry(
-                                    Point.fromLngLat(g.longitud, g.latitud)
-                                ).also { f ->
-                                    f.addStringProperty("icon", iconKey)
-                                    f.addStringProperty("nombre", g.nombre)
-                                }
-                            }
-
+                        // ── 2. GeoJSON Source con clustering activado ─────────────
+                        val featureCollection = MapClusterHelper.buildFeatureCollection(gasolineras, combustible)
                         val source = GeoJsonSource(
                             "gasolineras-source",
-                            FeatureCollection.fromFeatures(features)
+                            featureCollection,
+                            GeoJsonOptions()
+                                .withCluster(true)
+                                .withClusterMaxZoom(13)
+                                .withClusterRadius(60)
                         )
                         style.addSource(source)
 
-                        val layer = SymbolLayer("gasolineras-layer", "gasolineras-source").apply {
+                        // ── 3. Capa círculos de cluster ───────────────────────────
+                        val clusterCircles = CircleLayer("layer-clusters", "gasolineras-source").apply {
+                            setFilter(has("point_count"))
                             setProperties(
-                                iconImage("{icon}"),
+                                circleColor(
+                                    step(
+                                        get("point_count"),
+                                        color(Color.parseColor("#388E3C")),   // verde  < 10
+                                        stop(10,  color(Color.parseColor("#F57C00"))), // naranja 10-49
+                                        stop(50,  color(Color.parseColor("#C62828")))  // rojo   50+
+                                    )
+                                ),
+                                circleRadius(
+                                    step(
+                                        get("point_count"),
+                                        literal(22f),
+                                        stop(10, literal(30f)),
+                                        stop(50, literal(38f))
+                                    )
+                                ),
+                                circleOpacity(0.88f),
+                                circleStrokeWidth(2.5f),
+                                circleStrokeColor(Color.WHITE)
+                            )
+                        }
+                        style.addLayer(clusterCircles)
+
+                        // ── 4. Capa texto contador cluster ────────────────────────
+                        val clusterCount = SymbolLayer("layer-cluster-count", "gasolineras-source").apply {
+                            setFilter(has("point_count"))
+                            setProperties(
+                                textField(toString(get("point_count"))),
+                                textSize(13f),
+                                textColor(Color.WHITE),
+                                textIgnorePlacement(true),
+                                textAllowOverlap(true)
+                            )
+                        }
+                        style.addLayer(clusterCount)
+
+                        // ── 5. Capa puntos individuales (sin cluster) ─────────────
+                        val individualPoints = SymbolLayer("gasolineras-layer", "gasolineras-source").apply {
+                            setFilter(not(has("point_count")))
+                            setProperties(
+                                iconImage(
+                                    // Mapea el índice del feature a su icono bitmap
+                                    // Usamos el id para reconstruir el índice
+                                    toString(get("id"))
+                                ),
                                 iconAllowOverlap(true),
                                 iconSize(1.0f)
                             )
                         }
-                        style.addLayer(layer)
+                        style.addLayer(individualPoints)
+
+                        // ── 6. Click: cluster → zoom in │ punto → info ────────────
+                        map.addOnMapClickListener { latLng ->
+                            val pixel = map.projection.toScreenLocation(latLng)
+
+                            val clusterFeatures = map.queryRenderedFeatures(pixel, "layer-clusters")
+                            if (clusterFeatures.isNotEmpty()) {
+                                val currentZoom = map.cameraPosition.zoom
+                                map.animateCamera(
+                                    CameraUpdateFactory.newLatLngZoom(latLng, currentZoom + 2.0),
+                                    400
+                                )
+                                true
+                            } else {
+                                false
+                            }
+                        }
                     }
                 }
                 onStart()
@@ -91,40 +148,23 @@ fun MapScreen(
 }
 
 private fun crearMarcadorConPrecio(precio: String, esBarata: Boolean): Bitmap {
-    val fondoColor  = if (esBarata) Color.parseColor("#1B5E20") else Color.parseColor("#2E7D32")
-    val bordeColor  = if (esBarata) Color.parseColor("#FFD700") else Color.parseColor("#1B5E20")
+    val fondoColor = if (esBarata) Color.parseColor("#1B5E20") else Color.parseColor("#2E7D32")
+    val bordeColor = if (esBarata) Color.parseColor("#FFD700") else Color.parseColor("#1B5E20")
 
-    val paintFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = fondoColor; style = Paint.Style.FILL
-    }
-    val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = bordeColor; style = Paint.Style.STROKE; strokeWidth = 4f
-    }
-    val paintPunta = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = fondoColor; style = Paint.Style.FILL
-    }
-    val paintPrecio = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textSize = 22f
-        typeface = Typeface.DEFAULT_BOLD
-        textAlign = Paint.Align.CENTER
-    }
-    val paintIcono = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.WHITE
-        textSize = 18f
-        textAlign = Paint.Align.CENTER
-    }
+    val paintFondo  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fondoColor; style = Paint.Style.FILL }
+    val paintBorde  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = bordeColor; style = Paint.Style.STROKE; strokeWidth = 4f }
+    val paintPunta  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = fondoColor; style = Paint.Style.FILL }
+    val paintPrecio = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 22f; typeface = Typeface.DEFAULT_BOLD; textAlign = Paint.Align.CENTER }
+    val paintIcono  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 18f; textAlign = Paint.Align.CENTER }
 
     val w = 120; val h = 80; val radio = 12f
     val bitmap = Bitmap.createBitmap(w, h + 20, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
 
-    // Cuerpo redondeado
     val rect = RectF(2f, 2f, w - 2f, h - 2f)
     canvas.drawRoundRect(rect, radio, radio, paintFondo)
     canvas.drawRoundRect(rect, radio, radio, paintBorde)
 
-    // Punta inferior
     val path = Path().apply {
         moveTo(w / 2f - 12f, h - 2f)
         lineTo(w / 2f, h + 18f)
@@ -132,11 +172,7 @@ private fun crearMarcadorConPrecio(precio: String, esBarata: Boolean): Bitmap {
         close()
     }
     canvas.drawPath(path, paintPunta)
-
-    // Icono ⛽ pequeño arriba
     canvas.drawText("⛽", w / 2f, 26f, paintIcono)
-
-    // Precio centrado
     canvas.drawText(precio, w / 2f, 58f, paintPrecio)
 
     return bitmap
