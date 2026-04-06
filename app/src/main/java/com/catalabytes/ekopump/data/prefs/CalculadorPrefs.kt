@@ -21,6 +21,7 @@ class CalculadorPrefs @Inject constructor(
         val KEY_CONSUMO      = floatPreferencesKey("consumo_l100km")
         val KEY_LITROS       = floatPreferencesKey("litros_repostar")
         val KEY_VEHICLE_TYPE = stringPreferencesKey("vehicle_type")
+        val KEY_ENERGY_TYPE  = stringPreferencesKey("energy_type")
     }
 
     val consumo: Flow<Float> = context.calculadorDataStore.data.map {
@@ -35,6 +36,10 @@ class CalculadorPrefs @Inject constructor(
         it[KEY_VEHICLE_TYPE] ?: "TURISMO"
     }
 
+    val energyType: Flow<String?> = context.calculadorDataStore.data.map {
+        it[KEY_ENERGY_TYPE]
+    }
+
     suspend fun setConsumo(v: Float) {
         context.calculadorDataStore.edit { it[KEY_CONSUMO] = v }
     }
@@ -45,5 +50,11 @@ class CalculadorPrefs @Inject constructor(
 
     suspend fun setVehicleType(name: String) {
         context.calculadorDataStore.edit { it[KEY_VEHICLE_TYPE] = name }
+    }
+
+    suspend fun setEnergyType(name: String?) {
+        context.calculadorDataStore.edit {
+            if (name == null) it.remove(KEY_ENERGY_TYPE) else it[KEY_ENERGY_TYPE] = name
+        }
     }
 }

@@ -276,6 +276,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
     val consumo     by viewModel.consumo.collectAsState()
     val litros      by viewModel.litros.collectAsState()
     val vehicleType by viewModel.vehicleType.collectAsState()
+    val energyType  by viewModel.energyType.collectAsState()
     val verde    = Color(0xFF69F0AE)
     val darkBg   = Color(0xFF0D1F0D)
     val darkCard = Color(0xFF162916)
@@ -320,6 +321,52 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center)
                     }
                 }
+            }
+        }
+
+        // Selector de energía alternativa
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("⚡ Energía alternativa", fontSize = 13.sp, color = grayText)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                com.catalabytes.ekopump.domain.model.EnergyType.entries.forEach { tipo ->
+                    val sel = energyType == tipo
+                    val accentColor = when (tipo) {
+                        com.catalabytes.ekopump.domain.model.EnergyType.GNC     -> Color(0xFF29B6F6)
+                        com.catalabytes.ekopump.domain.model.EnergyType.GNL     -> Color(0xFFAB47BC)
+                        com.catalabytes.ekopump.domain.model.EnergyType.ADBLUE  -> Color(0xFF1E88E5)
+                        com.catalabytes.ekopump.domain.model.EnergyType.EV      -> Color(0xFFFFD600)
+                    }
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(if (sel) accentColor.copy(alpha = 0.18f) else darkCard)
+                            .border(1.5.dp,
+                                if (sel) accentColor else Color.White.copy(alpha = 0.08f),
+                                RoundedCornerShape(12.dp))
+                            .clickable {
+                                viewModel.setEnergyType(if (sel) null else tipo)
+                            }
+                            .padding(vertical = 10.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(tipo.emoji, fontSize = 18.sp)
+                            Text(tipo.labelEs, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                                color = if (sel) accentColor else grayText)
+                            Text(tipo.descripcion, fontSize = 8.sp, color = grayText.copy(alpha = 0.7f),
+                                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                                lineHeight = 10.sp)
+                        }
+                    }
+                }
+            }
+            if (energyType != null) {
+                Text(
+                    "Toca de nuevo para deseleccionar",
+                    fontSize = 10.sp,
+                    color = grayText.copy(alpha = 0.5f)
+                )
             }
         }
 

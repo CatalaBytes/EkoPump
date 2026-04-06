@@ -8,6 +8,7 @@ import com.catalabytes.ekopump.data.prefs.PriceHistoryPrefs
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.data.repository.GasolinerasRepository
+import com.catalabytes.ekopump.domain.model.EnergyType
 import com.catalabytes.ekopump.domain.model.TendenciaPrecio
 import com.catalabytes.ekopump.domain.model.VehicleType
 import com.catalabytes.ekopump.ui.common.UiState
@@ -55,6 +56,13 @@ class GasolinerasViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, VehicleType.TURISMO)
 
+    val energyType: StateFlow<EnergyType?> = calculadorPrefs.energyType
+        .map { name ->
+            if (name == null) null
+            else try { EnergyType.valueOf(name) } catch (e: Exception) { null }
+        }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     init { cargar() }
 
     fun cargar() {
@@ -101,5 +109,9 @@ class GasolinerasViewModel @Inject constructor(
     fun setLitros(v: Float)      { viewModelScope.launch { calculadorPrefs.setLitros(v) } }
     fun setVehicleType(tipo: VehicleType) {
         viewModelScope.launch { calculadorPrefs.setVehicleType(tipo.name) }
+    }
+
+    fun setEnergyType(tipo: EnergyType?) {
+        viewModelScope.launch { calculadorPrefs.setEnergyType(tipo?.name) }
     }
 }
