@@ -15,6 +15,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import org.maplibre.android.MapLibre
+import org.maplibre.android.location.LocationComponentActivationOptions
+import org.maplibre.android.location.modes.CameraMode
+import org.maplibre.android.location.modes.RenderMode
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
@@ -41,7 +44,7 @@ fun MapScreen(
         factory = { ctx ->
             MapView(ctx).apply {
                 getMapAsync { map ->
-                    map.setStyle("https://demotiles.maplibre.org/style.json") { style ->
+                    map.setStyle("https://tiles.openfreemap.org/styles/liberty") { style ->
 
                         map.cameraPosition = CameraPosition.Builder()
                             .target(LatLng(userLat, userLon))
@@ -49,11 +52,11 @@ fun MapScreen(
                             .build()
 
                         // ── 1. Bitmaps para puntos individuales ──────────────────
-                        gasolineras.forEachIndexed { idx, item ->
+                        gasolineras.forEach { item ->
                             val g = item.gasolinera
                             val precio = combustible.precio(g)
                             val precioStr = precio?.let { "${"%.3f".format(it)}€" } ?: "—"
-                            style.addImage("pin_$idx", crearMarcadorConPrecio(precioStr, item.esMasCercana))
+                            style.addImage(g.id, crearMarcadorConPrecio(precioStr, item.esMasCercana))
                         }
 
                         // ── 2. GeoJSON Source con clustering activado ─────────────
@@ -123,7 +126,22 @@ fun MapScreen(
                         }
                         style.addLayer(individualPoints)
 
-                        // ── 6. Click: cluster → zoom in │ punto → info ────────────
+                        // ── 6. Punto azul de ubicación del usuario ───────────────
+                        try {
+                            val locationComponent = map.locationComponent
+                            val activationOptions = LocationComponentActivationOptions
+                                .builder(ctx, style)
+                                .useDefaultLocationEngine(true)
+                                .build()
+                            locationComponent.activateLocationComponent(activationOptions)
+                            locationComponent.isLocationComponentEnabled = true
+                            locationComponent.cameraMode = CameraMode.NONE
+                            locationComponent.renderMode = RenderMode.COMPASS
+                        } catch (e: Exception) {
+                            // Permiso no concedido aún, se ignora
+                        }
+
+                        // ── 7. Click: cluster → zoom in │ punto → info ────────────
                         map.addOnMapClickListener { latLng ->
                             val pixel = map.projection.toScreenLocation(latLng)
 

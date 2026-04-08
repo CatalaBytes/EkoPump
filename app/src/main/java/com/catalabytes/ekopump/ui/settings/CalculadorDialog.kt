@@ -83,27 +83,48 @@ fun CalculadorDialog(
                     }
                 }
 
-                FuturisticSliderSection(
-                    title         = "Consumo",
-                    value         = consumo,
-                    min           = vehicleType.consumoMin,
-                    max           = vehicleType.consumoMax,
-                    formatted     = "${"%.1f".format(consumo)} L/100km",
-                    quickValues   = vehicleType.quickConsumos,
-                    onValueChange = { viewModel.setConsumo(it) },
-                    quickLabel    = { "${it.toInt()}L" }
-                )
+                if (vehicleType == VehicleType.ELECTRICO) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFF1B3A2D)),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp).fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text("⚡ Próximamente", color = Color(0xFF00C853),
+                                fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text("Soporte para eléctricos en la próxima versión.",
+                                color = Color.Gray,
+                                fontSize = 13.sp,
+                                textAlign = TextAlign.Center)
+                        }
+                    }
+                } else {
+                    FuturisticSliderSection(
+                        title         = "Consumo",
+                        value         = consumo,
+                        min           = vehicleType.consumoMin,
+                        max           = vehicleType.consumoMax,
+                        formatted     = "${"%.1f".format(consumo)} L/100km",
+                        quickValues   = vehicleType.quickConsumos,
+                        onValueChange = { viewModel.setConsumo(it) },
+                        quickLabel    = { "${it.toInt()}L" }
+                    )
 
-                FuturisticSliderSection(
-                    title         = "Litros a repostar",
-                    value         = litros,
-                    min           = vehicleType.litrosMin,
-                    max           = vehicleType.litrosMax,
-                    formatted     = "${"%.0f".format(litros)} L",
-                    quickValues   = vehicleType.quickLitros,
-                    onValueChange = { viewModel.setLitros(it) },
-                    quickLabel    = { "${it.toInt()}L" }
-                )
+                    FuturisticSliderSection(
+                        title         = "Litros a repostar",
+                        value         = litros,
+                        min           = vehicleType.litrosMin,
+                        max           = vehicleType.litrosMax,
+                        formatted     = "${"%.0f".format(litros)} L",
+                        quickValues   = vehicleType.quickLitros,
+                        onValueChange = { viewModel.setLitros(it) },
+                        quickLabel    = { "${it.toInt()}L" }
+                    )
+                }
 
                 Button(
                     onClick  = onDismiss,

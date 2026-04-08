@@ -55,6 +55,9 @@ import com.catalabytes.ekopump.viewmodel.GasolinerasViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Public
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -108,6 +111,7 @@ fun GasolinerasScreen(
     val uiState     by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
     var tabActual   by remember { mutableStateOf(0) }
+    val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
     var mostrarBrent    by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
@@ -161,6 +165,12 @@ fun GasolinerasScreen(
                     Row {
                         IconButton(onClick = { mostrarIdiomas = true }) {
                             Icon(Icons.Default.Language, contentDescription = "Idioma", tint = Color.White)
+                        }
+                        IconButton(onClick = {
+                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://ekopump.es"))
+                            ctx.startActivity(intent)
+                        }) {
+                            Icon(Icons.Default.Public, contentDescription = "Web", tint = Color.White)
                         }
                         IconButton(onClick = { viewModel.cargar() }) {
                             Icon(Icons.Default.Refresh, contentDescription = "Actualizar", tint = Color.White)
