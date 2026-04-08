@@ -1,6 +1,8 @@
 package com.catalabytes.ekopump.ui.history
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -77,6 +79,52 @@ fun AddRefuelSheet(
             }
 
             Spacer(Modifier.height(16.dp))
+
+            // Litros rápidos
+            val quickLitros = listOf(20f, 30f, 40f, 50f)
+            val litrosTanqueLleno = 60f
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                quickLitros.forEach { q ->
+                    val sel = litersText == q.toInt().toString()
+                    Surface(
+                        color = if (sel) EkoGreen else Color(0xFF1A2D40),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .clickable { litersText = q.toInt().toString() }
+                    ) {
+                        Box(contentAlignment = androidx.compose.ui.Alignment.Center,
+                            modifier = Modifier.padding(vertical = 8.dp)) {
+                            Text("${q.toInt()}L",
+                                color = if (sel) Color.Black else Color.White,
+                                style = MaterialTheme.typography.labelMedium,
+                                fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
+                // Botón "Lleno"
+                val selLleno = litersText == litrosTanqueLleno.toInt().toString()
+                Surface(
+                    color = if (selLleno) EkoGreen else Color(0xFF1A2D40),
+                    shape = RoundedCornerShape(8.dp),
+                    modifier = Modifier
+                        .weight(1f)
+                        .clickable { litersText = litrosTanqueLleno.toInt().toString() }
+                ) {
+                    Box(contentAlignment = androidx.compose.ui.Alignment.Center,
+                        modifier = Modifier.padding(vertical = 8.dp)) {
+                        Text("Lleno",
+                            color = if (selLleno) Color.Black else Color.White,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
 
             // Campo litros
             OutlinedTextField(
