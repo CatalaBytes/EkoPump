@@ -407,16 +407,20 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
         ) {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
                 Text("Consumo", fontSize = 13.sp, color = grayText)
-                Text("${"%.1f".format(consumo)} L/100km", fontSize = 15.sp,
-                    fontWeight = FontWeight.ExtraBold, color = verde)
+                val esElectrico = vehicleType == com.catalabytes.ekopump.domain.model.VehicleType.ELECTRICO
+                Text(
+                    "${"%.1f".format(consumo)} ${if (esElectrico) "kWh/100km" else "L/100km"}",
+                    fontSize = 15.sp, fontWeight = FontWeight.ExtraBold, color = verde
+                )
             }
             Slider(value = consumo, onValueChange = { viewModel.setConsumo(it) },
                 valueRange = vehicleType.consumoMin..vehicleType.consumoMax,
                 colors = SliderDefaults.colors(thumbColor = verde, activeTrackColor = verde,
                     inactiveTrackColor = Color.White.copy(alpha = 0.15f)))
+            val unidad = if (vehicleType == com.catalabytes.ekopump.domain.model.VehicleType.ELECTRICO) "kWh" else "L"
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                Text("${vehicleType.consumoMin.toInt()}L", fontSize = 10.sp, color = grayText)
-                Text("${vehicleType.consumoMax.toInt()}L", fontSize = 10.sp, color = grayText)
+                Text("${vehicleType.consumoMin.toInt()}$unidad", fontSize = 10.sp, color = grayText)
+                Text("${vehicleType.consumoMax.toInt()}$unidad", fontSize = 10.sp, color = grayText)
             }
             Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 vehicleType.quickConsumos.forEach { v ->

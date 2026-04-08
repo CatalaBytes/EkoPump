@@ -27,6 +27,8 @@ data class EstacionDto(
     @Json(name = "Precio Gasoleo B") val precioGasoleoB: String,
     @Json(name = "Precio Gasoleo Premium") val precioGasoleoPremium: String,
     @Json(name = "Precio Gases licuados del petróleo") val precioGLP: String,
+    @Json(name = "Precio Gas Natural Comprimido") val precioGNC: String = "",
+    @Json(name = "Precio Gas Natural Licuado") val precioGNL: String = "",
     @Json(name = "IDProvincia") val idProvincia: String,
     @Json(name = "IDMunicipio") val idMunicipio: String
 )

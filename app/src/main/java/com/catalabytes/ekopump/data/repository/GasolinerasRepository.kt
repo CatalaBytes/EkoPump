@@ -70,5 +70,7 @@ enum class Combustible(val label: String, val precio: (Gasolinera) -> Double?) {
     GASOLINA_98("Gasolina 98", { it.gasolina98 }),
     GASOLEO_A("Diésel", { it.gasoleoA }),
     GASOLEO_PREMIUM("Diésel Premium", { it.gasoleoPremium }),
-    GLP("GLP", { it.glp })
+    GLP("GLP", { it.glp }),
+    GNC("GNC", { it.gnc }),
+    GNL("GNL", { it.gnl })
 }

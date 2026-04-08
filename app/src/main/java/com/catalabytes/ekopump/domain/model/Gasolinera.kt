@@ -14,5 +14,7 @@ data class Gasolinera(
     val gasoleoA: Double?,
     val gasoleoB: Double?,
     val gasoleoPremium: Double?,
-    val glp: Double?
+    val glp: Double?,
+    val gnc: Double?,
+    val gnl: Double?
 )

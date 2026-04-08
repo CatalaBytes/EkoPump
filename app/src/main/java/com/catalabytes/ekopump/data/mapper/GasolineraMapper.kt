@@ -17,5 +17,7 @@ fun EstacionDto.toDomain(): Gasolinera = Gasolinera(
     gasoleoA = precioGasoleoA.replace(",", ".").toDoubleOrNull(),
     gasoleoB = precioGasoleoB.replace(",", ".").toDoubleOrNull(),
     gasoleoPremium = precioGasoleoPremium.replace(",", ".").toDoubleOrNull(),
-    glp = precioGLP.replace(",", ".").toDoubleOrNull()
+    glp = precioGLP.replace(",", ".").toDoubleOrNull(),
+    gnc = precioGNC.replace(",", ".").toDoubleOrNull(),
+    gnl = precioGNL.replace(",", ".").toDoubleOrNull()
 )
