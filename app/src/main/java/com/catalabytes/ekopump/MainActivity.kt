@@ -113,6 +113,7 @@ fun GasolinerasScreen(
     var tabActual   by remember { mutableStateOf(0) }
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
+    var gasolineraMapaSeleccionada by remember { mutableStateOf<com.catalabytes.ekopump.data.repository.GasolineraConDistancia?>(null) }
     var mostrarBrent    by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -130,6 +131,23 @@ fun GasolinerasScreen(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
         ))
+    }
+
+    // BottomSheet desde mapa
+    gasolineraMapaSeleccionada?.let { item ->
+        val combustibleActual = combustible
+        val precio = combustibleActual.precio(item.gasolinera)
+        AddRefuelSheet(
+            stationName      = item.gasolinera.nombre,
+            stationAddress   = item.gasolinera.direccion,
+            fuelType         = combustibleActual.label,
+            pricePerLiter    = precio ?: 0.0,
+            avgNationalPrice = precio ?: 0.0,
+            latitude         = item.gasolinera.latitud,
+            longitude        = item.gasolinera.longitud,
+            onSave           = { historyViewModel.addRefuel(it) },
+            onDismiss        = { gasolineraMapaSeleccionada = null }
+        )
     }
 
     if (mostrarIdiomas) {
@@ -234,7 +252,8 @@ fun GasolinerasScreen(
                         gasolineras = state.data,
                         combustible = combustible,
                         userLat = userLat,
-                        userLon = userLon
+                        userLon = userLon,
+                        onGasolineraClick = { gasolineraMapaSeleccionada = it }
                     )
                     is UiState.Loading -> CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center), color = EkoGreen40)

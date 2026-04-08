@@ -34,7 +34,8 @@ fun MapScreen(
     gasolineras: List<GasolineraConDistancia>,
     combustible: Combustible,
     userLat: Double,
-    userLon: Double
+    userLon: Double,
+    onGasolineraClick: (GasolineraConDistancia) -> Unit = {}
 ) {
     val context = LocalContext.current
     MapLibre.getInstance(context)
@@ -145,6 +146,7 @@ fun MapScreen(
                         map.addOnMapClickListener { latLng ->
                             val pixel = map.projection.toScreenLocation(latLng)
 
+                            // Cluster → zoom in
                             val clusterFeatures = map.queryRenderedFeatures(pixel, "layer-clusters")
                             if (clusterFeatures.isNotEmpty()) {
                                 val currentZoom = map.cameraPosition.zoom
@@ -152,10 +154,21 @@ fun MapScreen(
                                     CameraUpdateFactory.newLatLngZoom(latLng, currentZoom + 2.0),
                                     400
                                 )
-                                true
-                            } else {
-                                false
+                                return@addOnMapClickListener true
                             }
+
+                            // Marker individual → BottomSheet
+                            val markerFeatures = map.queryRenderedFeatures(pixel, "gasolineras-layer")
+                            if (markerFeatures.isNotEmpty()) {
+                                val feature = markerFeatures.first()
+                                val id = feature.getStringProperty("id")
+                                val gasolinera = gasolineras.find { it.gasolinera.id == id }
+                                if (gasolinera != null) {
+                                    onGasolineraClick(gasolinera)
+                                    return@addOnMapClickListener true
+                                }
+                            }
+                            false
                         }
                     }
                 }
