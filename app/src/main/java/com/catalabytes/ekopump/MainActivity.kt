@@ -111,6 +111,7 @@ fun GasolinerasScreen(
 ) {
     val uiState     by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
+    val radioKm     by viewModel.radioKm.collectAsState()
     var tabActual   by remember { mutableStateOf(0) }
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
@@ -228,6 +229,33 @@ fun GasolinerasScreen(
                             )
                         }
                     }
+                }
+                // ── Slider radio de búsqueda ─────────────────────────────
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        "📍 Radio: ${radioKm.toInt()} km",
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Slider(
+                        value = radioKm.toFloat(),
+                        onValueChange = { viewModel.setRadioKm(it.toDouble()) },
+                        valueRange = 2f..50f,
+                        steps = 11,
+                        modifier = Modifier.weight(1f).padding(horizontal = 12.dp),
+                        colors = SliderDefaults.colors(
+                            thumbColor = Color.White,
+                            activeTrackColor = Color(0xFF00C853),
+                            inactiveTrackColor = Color(0xFF2E7D32)
+                        )
+                    )
                 }
             }
         },

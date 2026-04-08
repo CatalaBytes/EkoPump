@@ -14,6 +14,7 @@ import com.catalabytes.ekopump.domain.model.VehicleType
 import com.catalabytes.ekopump.ui.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -63,6 +64,14 @@ class GasolinerasViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    private val _radioKm = MutableStateFlow(10.0)
+    val radioKm: StateFlow<Double> = _radioKm.asStateFlow()
+
+    fun setRadioKm(km: Double) {
+        _radioKm.value = km
+        cargar()
+    }
+
     init { cargar() }
 
     fun cargar() {
@@ -74,7 +83,7 @@ class GasolinerasViewModel @Inject constructor(
                     _userLat.value = it.latitude
                     _userLon.value = it.longitude
                 }
-                val data = repository.getGasolinerasCercanas(_combustible.value)
+                val data = repository.getGasolinerasCercanas(_combustible.value, _radioKm.value)
                 _uiState.value = UiState.Success(data)
                 calcularTendencias(data)
             } catch (e: Exception) {
