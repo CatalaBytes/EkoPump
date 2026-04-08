@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -41,6 +42,7 @@ import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.history.AddRefuelSheet
 import com.catalabytes.ekopump.ui.map.GasolineraDetailSheet
 import com.catalabytes.ekopump.ui.history.HistoryScreen
+import com.catalabytes.ekopump.ui.favorites.FavoritasScreen
 import com.catalabytes.ekopump.ui.history.HistoryViewModel
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
@@ -264,13 +266,14 @@ fun GasolinerasScreen(
                 containerColor = Color(0xFF0D1F0D),
                 tonalElevation = 0.dp
             ) {
-                val iconos = listOf(
-                    Icons.Default.List    to "Lista",
-                    Icons.Default.Map     to "Mapa",
-                    Icons.Default.History to "Historial",
-                    Icons.Default.Settings to "Perfil"
+                val navItems = listOf(
+                    Triple(Icons.Default.List,     "Lista",     0),
+                    Triple(Icons.Default.Map,      "Mapa",      1),
+                    Triple(Icons.Default.History,  "Historial", 2),
+                    Triple(Icons.Default.Favorite, "Favoritas", 3),
+                    Triple(Icons.Default.Settings, "Perfil",    4)
                 )
-                iconos.forEachIndexed { idx, (icon, label) ->
+                navItems.forEach { (icon, label, idx) ->
                     NavigationBarItem(
                         selected = tabActual == idx,
                         onClick  = { tabActual = idx },
@@ -305,7 +308,15 @@ fun GasolinerasScreen(
                         color = MaterialTheme.colorScheme.error)
                 }
                 2 -> HistoryScreen(viewModel = historyViewModel)
-                3 -> PerfilScreen(viewModel = viewModel)
+                3 -> when (val state = uiState) {
+                    is UiState.Success -> FavoritasScreen(
+                        gasolineras       = state.data,
+                        combustible       = combustible,
+                        onGasolineraClick = { gasolineraMapaSeleccionada = it }
+                    )
+                    else -> HistoryScreen(viewModel = historyViewModel)
+                }
+                4 -> PerfilScreen(viewModel = viewModel)
                 else -> when (val state = uiState) {
                     is UiState.Loading -> Column(
                         modifier = Modifier.align(Alignment.Center),

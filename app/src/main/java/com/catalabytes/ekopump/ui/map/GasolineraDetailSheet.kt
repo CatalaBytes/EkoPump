@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
@@ -120,6 +121,45 @@ fun GasolineraDetailSheet(
             }
 
             Spacer(Modifier.height(16.dp))
+
+            // ── Todos los precios ────────────────────────────────────────
+            val precios = listOf(
+                "95"      to g.gasolina95,
+                "98"      to g.gasolina98,
+                "Diésel"  to g.gasoleoA,
+                "D.Prem"  to g.gasoleoPremium,
+                "GLP"     to g.glp,
+                "GNC"     to g.gnc,
+                "GNL"     to g.gnl
+            ).filter { it.second != null }
+
+            if (precios.size > 1) {
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(precios) { (label, precio) ->
+                        Box(
+                            modifier = Modifier
+                                .background(
+                                    Color(0xFF1B2E1C),
+                                    androidx.compose.foundation.shape.RoundedCornerShape(8.dp)
+                                )
+                                .padding(horizontal = 10.dp, vertical = 6.dp)
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(label, fontSize = 11.sp, color = Color(0xFF6B8F72))
+                                Text(
+                                    "${"%.3f".format(precio!!)}€",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB0C4B1)
+                                )
+                            }
+                        }
+                    }
+                }
+                Spacer(Modifier.height(16.dp))
+            }
 
             // ── Dirección ────────────────────────────────────────────────
             Row(verticalAlignment = Alignment.CenterVertically) {
