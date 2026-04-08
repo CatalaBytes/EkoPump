@@ -39,6 +39,7 @@ import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.ui.common.UiState
 import com.catalabytes.ekopump.ui.history.AddRefuelSheet
+import com.catalabytes.ekopump.ui.map.GasolineraDetailSheet
 import com.catalabytes.ekopump.ui.history.HistoryScreen
 import com.catalabytes.ekopump.ui.history.HistoryViewModel
 import com.catalabytes.ekopump.ui.map.MapScreen
@@ -114,6 +115,7 @@ fun GasolinerasScreen(
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
     var gasolineraMapaSeleccionada by remember { mutableStateOf<com.catalabytes.ekopump.data.repository.GasolineraConDistancia?>(null) }
+    var mostrarRepostarDesdeDetalle  by remember { mutableStateOf(false) }
     var mostrarBrent    by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -133,21 +135,34 @@ fun GasolinerasScreen(
         ))
     }
 
-    // BottomSheet desde mapa
+    // BottomSheet desde mapa — paso 1: info + horario + favorita
     gasolineraMapaSeleccionada?.let { item ->
-        val combustibleActual = combustible
-        val precio = combustibleActual.precio(item.gasolinera)
-        AddRefuelSheet(
-            stationName      = item.gasolinera.nombre,
-            stationAddress   = item.gasolinera.direccion,
-            fuelType         = combustibleActual.label,
-            pricePerLiter    = precio ?: 0.0,
-            avgNationalPrice = precio ?: 0.0,
-            latitude         = item.gasolinera.latitud,
-            longitude        = item.gasolinera.longitud,
-            onSave           = { historyViewModel.addRefuel(it) },
-            onDismiss        = { gasolineraMapaSeleccionada = null }
-        )
+        if (mostrarRepostarDesdeDetalle) {
+            // Paso 2: repostaje
+            val precio = combustible.precio(item.gasolinera)
+            AddRefuelSheet(
+                stationName      = item.gasolinera.nombre,
+                stationAddress   = item.gasolinera.direccion,
+                fuelType         = combustible.label,
+                pricePerLiter    = precio ?: 0.0,
+                avgNationalPrice = precio ?: 0.0,
+                latitude         = item.gasolinera.latitud,
+                longitude        = item.gasolinera.longitud,
+                onSave           = { historyViewModel.addRefuel(it) },
+                onDismiss        = {
+                    mostrarRepostarDesdeDetalle = false
+                    gasolineraMapaSeleccionada  = null
+                }
+            )
+        } else {
+            // Paso 1: detalle
+            GasolineraDetailSheet(
+                item        = item,
+                combustible = combustible,
+                onRepostar  = { mostrarRepostarDesdeDetalle = true },
+                onDismiss   = { gasolineraMapaSeleccionada = null }
+            )
+        }
     }
 
     if (mostrarIdiomas) {
