@@ -24,8 +24,11 @@ import com.catalabytes.ekopump.data.local.entity.RefuelEntity
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.compose.common.component.rememberLineComponent
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
+import com.patrykandpatrick.vico.core.common.Fill
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -149,8 +152,16 @@ fun HistoryScreen(
                                 style = MaterialTheme.typography.labelSmall
                             )
                             Spacer(Modifier.height(6.dp))
+                            val columnLayer = rememberColumnCartesianLayer(
+                                columnProvider = ColumnCartesianLayer.ColumnProvider.series(
+                                    rememberLineComponent(
+                                        fill = Fill(0xFF2E7D32.toInt()),
+                                        thickness = 16.dp
+                                    )
+                                )
+                            )
                             CartesianChartHost(
-                                chart = rememberCartesianChart(rememberColumnCartesianLayer()),
+                                chart = rememberCartesianChart(columnLayer),
                                 modelProducer = modelProducer,
                                 modifier = Modifier
                                     .fillMaxWidth()

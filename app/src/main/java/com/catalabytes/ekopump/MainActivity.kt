@@ -518,11 +518,18 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                         .padding(vertical = 10.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.width(56.dp)
+                    ) {
                         Text(tipo.emoji, fontSize = 22.sp)
-                        Text(tipo.labelEs, fontSize = 10.sp, fontWeight = FontWeight.SemiBold,
+                        Text(
+                            tipo.labelEs, fontSize = 10.sp, fontWeight = FontWeight.SemiBold,
                             color = if (sel) verde else grayText,
-                            textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
                     }
                 }
             }

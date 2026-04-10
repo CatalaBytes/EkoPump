@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
@@ -172,7 +173,10 @@ private fun VehicleCard(
             .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.width(56.dp)
+        ) {
             Text(tipo.emoji, fontSize = 22.sp)
             Spacer(Modifier.height(2.dp))
             Text(
@@ -180,7 +184,9 @@ private fun VehicleCard(
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = if (selected) EkoGreenNeon else EkoGrayText,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }

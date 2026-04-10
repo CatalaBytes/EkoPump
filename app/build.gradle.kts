@@ -1,4 +1,11 @@
 // app/build.gradle.kts
+import java.util.Properties
+
+val localProperties = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) load(f.inputStream())
+}
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -26,11 +33,11 @@ android {
     }
 
     signingConfigs {
-            create("release") {
+        create("release") {
             storeFile = file("/home/edeb13/ekopump-release.jks")
-            storePassword = "venezuelasubterranea"
+            storePassword = localProperties["KEYSTORE_PASSWORD"] as String
             keyAlias = "ekopump"
-            keyPassword = "venezuelasubterranea"
+            keyPassword = localProperties["KEY_PASSWORD"] as String
         }
     }
 

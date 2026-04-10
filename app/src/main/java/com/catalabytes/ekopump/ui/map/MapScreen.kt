@@ -171,7 +171,7 @@ fun MapScreen(
             }
         )
 
-        // ── FAB: centrar en ubicación GPS ─────────────────────────────────
+        // ── FAB: volver a mi ubicación GPS ───────────────────────────────
         FloatingActionButton(
             onClick = {
                 val m = mapInstance
@@ -187,7 +187,7 @@ fun MapScreen(
                 }
             },
             modifier = Modifier
-                .align(Alignment.BottomEnd)
+                .align(Alignment.BottomStart)
                 .padding(16.dp)
                 .navigationBarsPadding(),
             containerColor = EkoGreen40
