@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
@@ -114,8 +115,11 @@ fun GasolinerasScreen(
     val uiState     by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
     val radioKm     by viewModel.radioKm.collectAsState()
-    val alertIds      by viewModel.alertIds.collectAsState()
-    val lastRefreshMs by viewModel.lastRefreshMs.collectAsState()
+    val alertIds          by viewModel.alertIds.collectAsState()
+    val lastRefreshMs     by viewModel.lastRefreshMs.collectAsState()
+    val gpsDisponible     by viewModel.gpsDisponible.collectAsState()
+    val modoTransportista by viewModel.modoTransportista.collectAsState()
+    val tendencias        by viewModel.tendencias.collectAsState()
     var tabActual   by remember { mutableStateOf(0) }
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
@@ -123,6 +127,8 @@ fun GasolinerasScreen(
     var mostrarRepostarDesdeDetalle  by remember { mutableStateOf(false) }
     var mostrarBrent    by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
+    var bannerTransportistaDismissed by remember { mutableStateOf(false) }
+    LaunchedEffect(modoTransportista) { if (!modoTransportista) bannerTransportistaDismissed = false }
 
     LaunchedEffect(uiState) { isRefreshing = false }
     val userLat by viewModel.userLat.collectAsState()
@@ -161,6 +167,10 @@ fun GasolinerasScreen(
             )
         } else {
             // Paso 1: detalle
+            val esMasBarataItem = when (val s = uiState) {
+                is UiState.Success -> s.data.firstOrNull()?.gasolinera?.id == item.gasolinera.id
+                else -> false
+            }
             GasolineraDetailSheet(
                 item        = item,
                 combustible = combustible,
@@ -170,7 +180,10 @@ fun GasolinerasScreen(
                 onSetAlert  = { umbral ->
                     viewModel.setAlert(item.gasolinera.id, item.gasolinera.nombre, combustible.name, umbral)
                 },
-                onRemoveAlert = { viewModel.removeAlert(item.gasolinera.id) }
+                onRemoveAlert = { viewModel.removeAlert(item.gasolinera.id) },
+                tendencia   = tendencias[item.gasolinera.id]
+                    ?: com.catalabytes.ekopump.domain.model.TendenciaPrecio.ESTABLE,
+                esMasBarata = esMasBarataItem
             )
         }
     }
@@ -284,6 +297,36 @@ fun GasolinerasScreen(
                             .padding(horizontal = 16.dp, vertical = 2.dp)
                     )
                 }
+                // ── Banner modo transportista ─────────────────────────────
+                if (modoTransportista && !bannerTransportistaDismissed) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFFFF8F00).copy(alpha = 0.2f))
+                            .padding(horizontal = 16.dp, vertical = 5.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "🚛 Modo Transportista · Gasóleo A · Radio 25 km",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            color = Color(0xFFFFD54F),
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(
+                            onClick = { bannerTransportistaDismissed = true },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Close,
+                                contentDescription = "Cerrar",
+                                tint = Color(0xFFFFD54F),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                }
             }
         },
         bottomBar = {
@@ -320,11 +363,12 @@ fun GasolinerasScreen(
             when (tabActual) {
                 1 -> when (val state = uiState) {
                     is UiState.Success -> MapScreen(
-                        gasolineras = state.data,
-                        combustible = combustible,
-                        userLat = userLat,
-                        userLon = userLon,
-                        onGasolineraClick = { gasolineraMapaSeleccionada = it }
+                        gasolineras        = state.data,
+                        combustible        = combustible,
+                        userLat            = userLat,
+                        userLon            = userLon,
+                        locationDisponible = gpsDisponible,
+                        onGasolineraClick  = { gasolineraMapaSeleccionada = it }
                     )
                     is UiState.Loading -> CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center), color = EkoGreen40)
@@ -382,10 +426,11 @@ fun GasolinerasScreen(
 
 @Composable
 fun PerfilScreen(viewModel: GasolinerasViewModel) {
-    val consumo     by viewModel.consumo.collectAsState()
-    val litros      by viewModel.litros.collectAsState()
-    val vehicleType by viewModel.vehicleType.collectAsState()
-    val energyType  by viewModel.energyType.collectAsState()
+    val consumo           by viewModel.consumo.collectAsState()
+    val litros            by viewModel.litros.collectAsState()
+    val vehicleType       by viewModel.vehicleType.collectAsState()
+    val energyType        by viewModel.energyType.collectAsState()
+    val modoTransportista by viewModel.modoTransportista.collectAsState()
     val verde    = Color(0xFF69F0AE)
     val darkBg   = Color(0xFF0D1F0D)
     val darkCard = Color(0xFF162916)
@@ -400,6 +445,46 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Spacer(Modifier.height(8.dp))
+
+        // ── Modo Transportista ───────────────────────────────────────────
+        Card(
+            colors = CardDefaults.cardColors(containerColor = darkCard),
+            shape = RoundedCornerShape(12.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        "🚛 Modo Transportista",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp,
+                        color = if (modoTransportista) Color(0xFFFFD54F) else Color.White
+                    )
+                    Text(
+                        "Gasóleo A · Radio 25 km · Consumo 30 L/100km",
+                        fontSize = 12.sp,
+                        color = grayText
+                    )
+                }
+                Switch(
+                    checked = modoTransportista,
+                    onCheckedChange = { viewModel.setModoTransportista(it) },
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = Color(0xFFFF8F00),
+                        checkedTrackColor = Color(0xFFFF8F00).copy(alpha = 0.4f),
+                        uncheckedThumbColor = grayText,
+                        uncheckedTrackColor = grayText.copy(alpha = 0.2f)
+                    )
+                )
+            }
+        }
+
         Text("🚗 Mi vehículo", fontWeight = FontWeight.ExtraBold,
             fontSize = 24.sp, color = Color.White)
         Text("¿Qué conduces?", fontSize = 13.sp, color = grayText)

@@ -7,20 +7,34 @@ import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.RectF
 import android.graphics.Typeface
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.MyLocation
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
+import com.catalabytes.ekopump.ui.theme.EkoGreen40
+import kotlinx.coroutines.launch
 import org.maplibre.android.MapLibre
-import org.maplibre.android.location.LocationComponentActivationOptions
-import org.maplibre.android.location.modes.CameraMode
-import org.maplibre.android.location.modes.RenderMode
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.location.LocationComponentActivationOptions
+import org.maplibre.android.location.modes.CameraMode
+import org.maplibre.android.location.modes.RenderMode
+import org.maplibre.android.maps.MapLibreMap
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression.*
 import org.maplibre.android.style.layers.PropertyFactory.*
@@ -34,124 +48,162 @@ fun MapScreen(
     combustible: Combustible,
     userLat: Double,
     userLon: Double,
+    locationDisponible: Boolean = false,
     onGasolineraClick: (GasolineraConDistancia) -> Unit = {}
 ) {
     val context = LocalContext.current
     MapLibre.getInstance(context)
 
-    AndroidView(
-        modifier = Modifier.fillMaxSize(),
-        factory = { ctx ->
-            MapView(ctx).apply {
-                getMapAsync { map ->
-                    map.setStyle("https://tiles.openfreemap.org/styles/liberty") { style ->
+    var mapInstance by remember { mutableStateOf<MapLibreMap?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
 
-                        map.cameraPosition = CameraPosition.Builder()
-                            .target(LatLng(userLat, userLon))
-                            .zoom(12.0)
-                            .build()
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(
+            modifier = Modifier.fillMaxSize(),
+            factory = { ctx ->
+                MapView(ctx).apply {
+                    getMapAsync { map ->
+                        mapInstance = map
+                        map.setStyle("https://tiles.openfreemap.org/styles/liberty") { style ->
 
-                        // ── 1. Bitmaps para puntos individuales ──────────────────
-                        gasolineras.forEach { item ->
-                            val g = item.gasolinera
-                            val precio = combustible.precio(g)
-                            val precioStr = precio?.let { "${"%.3f".format(it)}€" } ?: "—"
-                            style.addImage(g.id, crearMarcadorConPrecio(precioStr, item.esMasCercana))
-                        }
-
-                        // ── 2. Bitmaps para clusters (SymbolLayer, evita CircleLayer) ──
-                        style.addImage("cluster-s", crearBitmapCluster())
-                        style.addImage("cluster-m", crearBitmapCluster())
-                        style.addImage("cluster-l", crearBitmapCluster())
-
-                        // ── 3. GeoJSON Source con clustering activado ─────────────
-                        val featureCollection = MapClusterHelper.buildFeatureCollection(gasolineras, combustible)
-                        val source = GeoJsonSource(
-                            "gasolineras-source",
-                            org.maplibre.geojson.FeatureCollection.fromFeatures(emptyList()),
-                            GeoJsonOptions()
-                                .withCluster(true)
-                                .withClusterMaxZoom(14)
-                                .withClusterRadius(50)
-                        )
-                        style.addSource(source)
-                        source.setGeoJson(featureCollection)
-
-                        // ── 4. Capa clusters como SymbolLayer con bitmap ───────────
-                        // Usar SymbolLayer en lugar de CircleLayer resuelve el problema
-                        // de orden de renderizado: ambas capas son SymbolLayer y MapLibre
-                        // gestiona la superposición correctamente entre ellas.
-                        val clusterLayer = SymbolLayer("layer-clusters", "gasolineras-source").apply {
-                            minZoom = 0f
-                            maxZoom = 13f
-                            setProperties(
-                                iconImage("cluster-s"),
-                                iconAllowOverlap(true),
-                                iconSize(1.0f)
-                            )
-                        }
-                        style.addLayer(clusterLayer)
-
-                        // ── 5. Capa puntos individuales ───────────────────────────
-                        val individualPoints = SymbolLayer("gasolineras-layer", "gasolineras-source").apply {
-                            minZoom = 13f
-                            maxZoom = 22f
-                            setProperties(
-                                iconImage(toString(get("id"))),
-                                iconAllowOverlap(true),
-                                iconSize(1.0f)
-                            )
-                        }
-                        style.addLayer(individualPoints)
-
-                        // ── 6. Punto azul de ubicación del usuario ───────────────
-                        try {
-                            val locationComponent = map.locationComponent
-                            val activationOptions = LocationComponentActivationOptions
-                                .builder(ctx, style)
-                                .useDefaultLocationEngine(true)
+                            map.cameraPosition = CameraPosition.Builder()
+                                .target(LatLng(userLat, userLon))
+                                .zoom(12.0)
                                 .build()
-                            locationComponent.activateLocationComponent(activationOptions)
-                            locationComponent.isLocationComponentEnabled = true
-                            locationComponent.cameraMode = CameraMode.NONE
-                            locationComponent.renderMode = RenderMode.COMPASS
-                        } catch (e: Exception) {
-                            // Permiso no concedido aún, se ignora
-                        }
 
-                        // ── 7. Click: cluster → zoom in │ punto → info ────────────
-                        map.addOnMapClickListener { latLng ->
-                            val pixel = map.projection.toScreenLocation(latLng)
-
-                            val clusterFeatures = map.queryRenderedFeatures(pixel, "layer-clusters")
-                            if (clusterFeatures.isNotEmpty()) {
-                                val currentZoom = map.cameraPosition.zoom
-                                map.animateCamera(
-                                    CameraUpdateFactory.newLatLngZoom(latLng, currentZoom + 2.0),
-                                    400
-                                )
-                                return@addOnMapClickListener true
+                            // ── 1. Bitmaps para puntos individuales ──────────────────
+                            gasolineras.forEach { item ->
+                                val g = item.gasolinera
+                                val precio = combustible.precio(g)
+                                val precioStr = precio?.let { "${"%.3f".format(it)}€" } ?: "—"
+                                style.addImage(g.id, crearMarcadorConPrecio(precioStr, item.esMasCercana))
                             }
 
-                            val markerFeatures = map.queryRenderedFeatures(pixel, "gasolineras-layer")
-                            if (markerFeatures.isNotEmpty()) {
-                                val feature = markerFeatures.first()
-                                val id = feature.getStringProperty("id")
-                                val gasolinera = gasolineras.find { it.gasolinera.id == id }
-                                if (gasolinera != null) {
-                                    onGasolineraClick(gasolinera)
+                            // ── 2. Bitmaps para clusters ──────────────────────────────
+                            style.addImage("cluster-s", crearBitmapCluster())
+                            style.addImage("cluster-m", crearBitmapCluster())
+                            style.addImage("cluster-l", crearBitmapCluster())
+
+                            // ── 3. GeoJSON Source con clustering activado ─────────────
+                            val featureCollection = MapClusterHelper.buildFeatureCollection(gasolineras, combustible)
+                            val source = GeoJsonSource(
+                                "gasolineras-source",
+                                org.maplibre.geojson.FeatureCollection.fromFeatures(emptyList()),
+                                GeoJsonOptions()
+                                    .withCluster(true)
+                                    .withClusterMaxZoom(14)
+                                    .withClusterRadius(50)
+                            )
+                            style.addSource(source)
+                            source.setGeoJson(featureCollection)
+
+                            // ── 4. Capa clusters ──────────────────────────────────────
+                            val clusterLayer = SymbolLayer("layer-clusters", "gasolineras-source").apply {
+                                minZoom = 0f
+                                maxZoom = 13f
+                                setProperties(
+                                    iconImage("cluster-s"),
+                                    iconAllowOverlap(true),
+                                    iconSize(1.0f)
+                                )
+                            }
+                            style.addLayer(clusterLayer)
+
+                            // ── 5. Capa puntos individuales ───────────────────────────
+                            val individualPoints = SymbolLayer("gasolineras-layer", "gasolineras-source").apply {
+                                minZoom = 13f
+                                maxZoom = 22f
+                                setProperties(
+                                    iconImage(toString(get("id"))),
+                                    iconAllowOverlap(true),
+                                    iconSize(1.0f)
+                                )
+                            }
+                            style.addLayer(individualPoints)
+
+                            // ── 6. Punto azul de ubicación del usuario ───────────────
+                            try {
+                                val locationComponent = map.locationComponent
+                                val activationOptions = LocationComponentActivationOptions
+                                    .builder(ctx, style)
+                                    .useDefaultLocationEngine(true)
+                                    .build()
+                                locationComponent.activateLocationComponent(activationOptions)
+                                locationComponent.isLocationComponentEnabled = true
+                                locationComponent.cameraMode = CameraMode.NONE
+                                locationComponent.renderMode = RenderMode.COMPASS
+                            } catch (e: Exception) {
+                                // Permiso no concedido aún
+                            }
+
+                            // ── 7. Click: cluster → zoom in │ punto → info ────────────
+                            map.addOnMapClickListener { latLng ->
+                                val pixel = map.projection.toScreenLocation(latLng)
+
+                                val clusterFeatures = map.queryRenderedFeatures(pixel, "layer-clusters")
+                                if (clusterFeatures.isNotEmpty()) {
+                                    val currentZoom = map.cameraPosition.zoom
+                                    map.animateCamera(
+                                        CameraUpdateFactory.newLatLngZoom(latLng, currentZoom + 2.0),
+                                        400
+                                    )
                                     return@addOnMapClickListener true
                                 }
+
+                                val markerFeatures = map.queryRenderedFeatures(pixel, "gasolineras-layer")
+                                if (markerFeatures.isNotEmpty()) {
+                                    val feature = markerFeatures.first()
+                                    val id = feature.getStringProperty("id")
+                                    val gasolinera = gasolineras.find { it.gasolinera.id == id }
+                                    if (gasolinera != null) {
+                                        onGasolineraClick(gasolinera)
+                                        return@addOnMapClickListener true
+                                    }
+                                }
+                                false
                             }
-                            false
                         }
                     }
+                    onStart()
+                    onResume()
                 }
-                onStart()
-                onResume()
             }
+        )
+
+        // ── FAB: centrar en ubicación GPS ─────────────────────────────────
+        FloatingActionButton(
+            onClick = {
+                val m = mapInstance
+                if (m == null || !locationDisponible) {
+                    coroutineScope.launch {
+                        snackbarHostState.showSnackbar("Ubicación no disponible")
+                    }
+                } else {
+                    m.animateCamera(
+                        CameraUpdateFactory.newLatLngZoom(LatLng(userLat, userLon), 14.0),
+                        800
+                    )
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+                .navigationBarsPadding(),
+            containerColor = EkoGreen40
+        ) {
+            Icon(
+                Icons.Default.MyLocation,
+                contentDescription = "Mi ubicación",
+                tint = androidx.compose.ui.graphics.Color.White
+            )
         }
-    )
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+    }
 }
 
 private fun crearBitmapCluster(): Bitmap {

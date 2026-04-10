@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
+import com.catalabytes.ekopump.domain.model.TendenciaPrecio
 import com.catalabytes.ekopump.ui.favorites.FavoritasPrefs
 
 private val EkoGreen  = Color(0xFF2E7D32)
@@ -41,7 +42,9 @@ fun GasolineraDetailSheet(
     onDismiss: () -> Unit,
     hasAlert: Boolean = false,
     onSetAlert: (Double) -> Unit = {},
-    onRemoveAlert: () -> Unit = {}
+    onRemoveAlert: () -> Unit = {},
+    tendencia: TendenciaPrecio = TendenciaPrecio.ESTABLE,
+    esMasBarata: Boolean = false
 ) {
     val context = LocalContext.current
     val g = item.gasolinera
@@ -123,12 +126,17 @@ fun GasolineraDetailSheet(
                 verticalAlignment = Alignment.Top
             ) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(
-                        text = g.nombre,
-                        fontSize = 20.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFFF0FDF4)
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (esMasBarata) {
+                            Text("🏆 ", fontSize = 18.sp)
+                        }
+                        Text(
+                            text = g.nombre,
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFF0FDF4)
+                        )
+                    }
                     Text(
                         text = g.localidad + " · " + g.provincia,
                         fontSize = 13.sp,
@@ -159,11 +167,23 @@ fun GasolineraDetailSheet(
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val (tendenciaSimbolo, tendenciaColor) = when (tendencia) {
+                        TendenciaPrecio.SUBE   -> "↑ Subiendo" to Color(0xFFE53935)
+                        TendenciaPrecio.BAJA   -> "↓ Bajando"  to Color(0xFF43A047)
+                        TendenciaPrecio.ESTABLE -> "→ Estable" to Color(0xFF9E9E9E)
+                    }
                     Text(
                         text = precioStr,
                         fontSize = 36.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = EkoGreenL
+                    )
+                    Text(
+                        text = tendenciaSimbolo,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = tendenciaColor,
+                        modifier = Modifier.padding(top = 2.dp)
                     )
                     Text(
                         text = combustible.label,

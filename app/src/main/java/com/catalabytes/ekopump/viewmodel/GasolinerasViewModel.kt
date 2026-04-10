@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -47,6 +48,9 @@ class GasolinerasViewModel @Inject constructor(
     private val _userLon = MutableStateFlow(-3.7038)
     val userLon: StateFlow<Double> = _userLon
 
+    private val _gpsDisponible = MutableStateFlow(false)
+    val gpsDisponible: StateFlow<Boolean> = _gpsDisponible.asStateFlow()
+
     private val _tendencias = MutableStateFlow<Map<String, TendenciaPrecio>>(emptyMap())
     val tendencias: StateFlow<Map<String, TendenciaPrecio>> = _tendencias
 
@@ -72,6 +76,9 @@ class GasolinerasViewModel @Inject constructor(
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
+    val modoTransportista: StateFlow<Boolean> = calculadorPrefs.modoTransportista
+        .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     private val _radioKm = MutableStateFlow(10.0)
     val radioKm: StateFlow<Double> = _radioKm.asStateFlow()
 
@@ -80,7 +87,14 @@ class GasolinerasViewModel @Inject constructor(
 
     init {
         _alertIds.value = priceAlertPrefs.getAlertIds()
-        cargar()
+        // Aplicar modo transportista persistido antes del primer cargar()
+        viewModelScope.launch {
+            if (calculadorPrefs.modoTransportista.first()) {
+                _combustible.value = Combustible.GASOLEO_A
+                _radioKm.value = 25.0
+            }
+            cargar()
+        }
         viewModelScope.launch {
             while (true) {
                 delay(20 * 60 * 1000L)
@@ -102,6 +116,7 @@ class GasolinerasViewModel @Inject constructor(
                 location?.let {
                     _userLat.value = it.latitude
                     _userLon.value = it.longitude
+                    _gpsDisponible.value = true
                 }
                 val data = repository.getGasolinerasCercanas(_combustible.value, _radioKm.value)
                 _uiState.value = UiState.Success(data)
@@ -122,6 +137,18 @@ class GasolinerasViewModel @Inject constructor(
     fun removeAlert(gasolineraId: String) {
         priceAlertPrefs.removePriceAlert(gasolineraId)
         _alertIds.value = priceAlertPrefs.getAlertIds()
+    }
+
+    fun setModoTransportista(activo: Boolean) {
+        viewModelScope.launch {
+            calculadorPrefs.setModoTransportista(activo)
+            if (activo) {
+                _combustible.value = Combustible.GASOLEO_A
+                _radioKm.value = 25.0
+                calculadorPrefs.setConsumo(30f)
+            }
+            cargar()
+        }
     }
 
     private fun calcularTendencias(lista: List<GasolineraConDistancia>) {

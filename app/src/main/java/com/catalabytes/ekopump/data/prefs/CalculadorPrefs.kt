@@ -1,6 +1,7 @@
 package com.catalabytes.ekopump.data.prefs
 
 import android.content.Context
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -20,8 +21,9 @@ class CalculadorPrefs @Inject constructor(
     companion object {
         val KEY_CONSUMO      = floatPreferencesKey("consumo_l100km")
         val KEY_LITROS       = floatPreferencesKey("litros_repostar")
-        val KEY_VEHICLE_TYPE = stringPreferencesKey("vehicle_type")
-        val KEY_ENERGY_TYPE  = stringPreferencesKey("energy_type")
+        val KEY_VEHICLE_TYPE        = stringPreferencesKey("vehicle_type")
+        val KEY_ENERGY_TYPE         = stringPreferencesKey("energy_type")
+        val KEY_MODO_TRANSPORTISTA  = booleanPreferencesKey("modo_transportista")
     }
 
     val consumo: Flow<Float> = context.calculadorDataStore.data.map {
@@ -40,6 +42,10 @@ class CalculadorPrefs @Inject constructor(
         it[KEY_ENERGY_TYPE]
     }
 
+    val modoTransportista: Flow<Boolean> = context.calculadorDataStore.data.map {
+        it[KEY_MODO_TRANSPORTISTA] ?: false
+    }
+
     suspend fun setConsumo(v: Float) {
         context.calculadorDataStore.edit { it[KEY_CONSUMO] = v }
     }
@@ -56,5 +62,9 @@ class CalculadorPrefs @Inject constructor(
         context.calculadorDataStore.edit {
             if (name == null) it.remove(KEY_ENERGY_TYPE) else it[KEY_ENERGY_TYPE] = name
         }
+    }
+
+    suspend fun setModoTransportista(v: Boolean) {
+        context.calculadorDataStore.edit { it[KEY_MODO_TRANSPORTISTA] = v }
     }
 }
