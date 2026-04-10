@@ -15,4 +15,17 @@
     <string name="permiso_ubicacion">EkoPump precisa a túa localización para atopar as gasolineiras máis próximas</string>
     <string name="error_ubicacion">Non se puido obter a localización</string>
     <string name="error_red">Erro de conexión. Comproba a túa internet</string>
+    <string name="registrar_repostaje">Rexistrar repostaxe</string>
+    <string name="odometro_actual">Cuentakilómetros actual (km)</string>
+    <string name="litros_repostados">Litros repostados</string>
+    <string name="precio_litro">Prezo por litro (€)</string>
+    <string name="guardar_repostaje">Gardar repostaxe</string>
+    <string name="resumen_mes">Resumo do mes</string>
+    <string name="total_gastado">Total gastado</string>
+    <string name="ahorro_estimado">Aforro estimado</string>
+    <string name="consumo_medio_real">Consumo medio real</string>
+    <string name="compartir_resumen">Compartir resumo do mes</string>
+    <string name="autonomia_baja">Autonomía baixa</string>
+    <string name="autonomia_restante_km">~%1$d km restantes</string>
+    <string name="consumo_sospechoso_advertencia">O consumo calculado parece inusual. Verifica o cuentakilómetros.</string>
 </resources>

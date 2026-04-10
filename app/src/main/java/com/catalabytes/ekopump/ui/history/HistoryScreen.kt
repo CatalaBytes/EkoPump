@@ -1,5 +1,6 @@
 package com.catalabytes.ekopump.ui.history
 
+import android.content.Intent
 import androidx.compose.animation.*
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,15 +10,22 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LocalGasStation
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.catalabytes.ekopump.data.local.entity.RefuelEntity
+import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
+import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
+import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -26,66 +34,202 @@ private val EkoDark  = Color(0xFF0D1B2A)
 private val EkoCard  = Color(0xFF1A2D40)
 
 @Composable
-fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
-    val refuels     by viewModel.refuels.collectAsState()
-    val totalSpent  by viewModel.totalSpent.collectAsState()
-    val totalSaved  by viewModel.totalSaved.collectAsState()
-    val totalLiters by viewModel.totalLiters.collectAsState()
-    val refuelCount by viewModel.refuelCount.collectAsState()
+fun HistoryScreen(
+    onRegistrar: () -> Unit = {},
+    viewModel: HistoryViewModel = hiltViewModel()
+) {
+    val refuels          by viewModel.refuels.collectAsState()
+    val totalSpent       by viewModel.totalSpent.collectAsState()
+    val totalSaved       by viewModel.totalSaved.collectAsState()
+    val totalLiters      by viewModel.totalLiters.collectAsState()
+    val refuelCount      by viewModel.refuelCount.collectAsState()
+    val refuelsMes       by viewModel.refuelsMes.collectAsState()
+    val totalGastadoMes  by viewModel.totalGastadoMes.collectAsState()
+    val totalLitrosMes   by viewModel.totalLitrosMes.collectAsState()
+    val avgConsumoMes    by viewModel.avgConsumoRealMes.collectAsState()
+    val totalAhorroMes   by viewModel.totalAhorroMes.collectAsState()
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(EkoDark)
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "⛽ Historial",
-            style = MaterialTheme.typography.headlineSmall,
-            color = EkoGreen,
-            fontWeight = FontWeight.Bold
-        )
+    val context = LocalContext.current
 
-        Spacer(Modifier.height(12.dp))
-
-        // Stat cards fila superior
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            StatCard(Modifier.weight(1f), "Repostajes", "$refuelCount")
-            StatCard(Modifier.weight(1f), "Litros", "${"%.1f".format(totalLiters ?: 0.0)} L")
-            StatCard(Modifier.weight(1f), "Ahorrado", "${"%.2f".format(totalSaved ?: 0.0)} €", highlight = true)
+    // Vico model producer para gráfico de barras
+    val modelProducer = remember { CartesianChartModelProducer() }
+    val ultimos10 = remember(refuelsMes) { refuelsMes.take(10).reversed() }
+    LaunchedEffect(ultimos10) {
+        if (ultimos10.isNotEmpty()) {
+            modelProducer.runTransaction {
+                columnSeries { series(ultimos10.map { it.totalCost }) }
+            }
         }
+    }
 
-        Spacer(Modifier.height(8.dp))
+    val mesActual = remember {
+        SimpleDateFormat("MMMM yyyy", Locale("es")).format(Date()).replaceFirstChar { it.uppercase() }
+    }
 
-        // Total gastado
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            colors = CardDefaults.cardColors(containerColor = EkoCard),
-            shape = RoundedCornerShape(12.dp)
-        ) {
-            Row(
-                modifier = Modifier.padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
+    Scaffold(
+        containerColor = EkoDark,
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onRegistrar,
+                containerColor = EkoGreen
             ) {
-                Text("💶 Total gastado:", color = Color.White, modifier = Modifier.weight(1f))
-                Text(
-                    "${"%.2f".format(totalSpent ?: 0.0)} €",
-                    color = EkoGreen,
-                    fontWeight = FontWeight.Bold,
-                    style = MaterialTheme.typography.titleMedium
+                Icon(
+                    imageVector = Icons.Default.LocalGasStation,
+                    contentDescription = "Registrar repostaje",
+                    tint = Color.Black
                 )
             }
         }
+    ) { innerPadding ->
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(EkoDark)
+                .padding(innerPadding)
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            item {
+                Text(
+                    text = "⛽ Historial",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = EkoGreen,
+                    fontWeight = FontWeight.Bold
+                )
+            }
 
-        Spacer(Modifier.height(16.dp))
+            item { Spacer(Modifier.height(4.dp)) }
 
-        if (refuels.isEmpty()) {
-            EmptyHistory()
-        } else {
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            // Resumen del mes
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = EkoCard),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            "📅 Resumen de $mesActual",
+                            color = EkoGreen,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                        Spacer(Modifier.height(10.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            MesStatItem(Modifier.weight(1f), "💶 Gastado", "${"%.2f".format(totalGastadoMes ?: 0.0)} €")
+                            MesStatItem(Modifier.weight(1f), "🛢 Litros", "${"%.1f".format(totalLitrosMes ?: 0.0)} L")
+                        }
+                        Spacer(Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            MesStatItem(
+                                Modifier.weight(1f),
+                                "⚡ Consumo real",
+                                if (avgConsumoMes != null) "${"%.1f".format(avgConsumoMes)} L/100" else "—"
+                            )
+                            MesStatItem(
+                                Modifier.weight(1f),
+                                "💚 Ahorro",
+                                if (totalAhorroMes != null) "${"%.2f".format(totalAhorroMes)} €" else "—",
+                                highlight = true
+                            )
+                        }
+
+                        // Gráfico de barras si hay datos
+                        if (ultimos10.isNotEmpty()) {
+                            Spacer(Modifier.height(12.dp))
+                            Text(
+                                "Gasto por repostaje (últimos ${ultimos10.size})",
+                                color = Color.Gray,
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                            Spacer(Modifier.height(6.dp))
+                            CartesianChartHost(
+                                chart = rememberCartesianChart(rememberColumnCartesianLayer()),
+                                modelProducer = modelProducer,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(120.dp)
+                            )
+                        }
+
+                        Spacer(Modifier.height(10.dp))
+                        OutlinedButton(
+                            onClick = {
+                                val texto = buildString {
+                                    append("⛽ Este mes he gastado ${"%.2f".format(totalGastadoMes ?: 0.0)} € en combustible")
+                                    append(" (${"%.1f".format(totalLitrosMes ?: 0.0)} L repostados).")
+                                    if (totalAhorroMes != null && (totalAhorroMes ?: 0f) > 0f) {
+                                        append(" He ahorrado ${"%.2f".format(totalAhorroMes)} € usando EkoPump 🟢")
+                                    }
+                                    if (avgConsumoMes != null) {
+                                        append(" Consumo medio real: ${"%.1f".format(avgConsumoMes)} L/100km.")
+                                    }
+                                    append(" #EkoPump ekopump.es")
+                                }
+                                val intent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_TEXT, texto)
+                                }
+                                context.startActivity(Intent.createChooser(intent, "Compartir resumen"))
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = EkoGreen),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, EkoGreen)
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Compartir resumen del mes")
+                        }
+                    }
+                }
+            }
+
+            item { Spacer(Modifier.height(4.dp)) }
+
+            // Stats globales
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    StatCard(Modifier.weight(1f), "Repostajes", "$refuelCount")
+                    StatCard(Modifier.weight(1f), "Litros", "${"%.1f".format(totalLiters ?: 0.0)} L")
+                    StatCard(Modifier.weight(1f), "Ahorrado", "${"%.2f".format(totalSaved ?: 0.0)} €", highlight = true)
+                }
+            }
+
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(containerColor = EkoCard),
+                    shape = RoundedCornerShape(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("💶 Total gastado:", color = Color.White, modifier = Modifier.weight(1f))
+                        Text(
+                            "${"%.2f".format(totalSpent ?: 0.0)} €",
+                            color = EkoGreen,
+                            fontWeight = FontWeight.Bold,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
+
+            item { Spacer(Modifier.height(4.dp)) }
+
+            if (refuels.isEmpty()) {
+                item { EmptyHistory() }
+            } else {
                 items(refuels, key = { it.id }) { refuel ->
                     AnimatedVisibility(
                         visible = true,
@@ -96,6 +240,24 @@ fun HistoryScreen(viewModel: HistoryViewModel = hiltViewModel()) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MesStatItem(
+    modifier: Modifier = Modifier,
+    label: String,
+    value: String,
+    highlight: Boolean = false
+) {
+    Column(modifier = modifier) {
+        Text(label, color = Color.Gray, style = MaterialTheme.typography.labelSmall)
+        Text(
+            value,
+            color = if (highlight) EkoGreen else Color.White,
+            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 
@@ -151,6 +313,13 @@ private fun RefuelCard(refuel: RefuelEntity, onDelete: () -> Unit) {
                     Text("${"%.3f".format(refuel.pricePerLiter)} €/L",    color = Color.LightGray)
                     Text("${"%.2f".format(refuel.totalCost)} €",          color = EkoGreen, fontWeight = FontWeight.Bold)
                 }
+                if (refuel.consumoRealL100 != null) {
+                    Text(
+                        "⚡ Consumo real: ${"%.1f".format(refuel.consumoRealL100)} L/100km",
+                        color = Color.Gray,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
                 if (refuel.savedAmount > 0) {
                     Text(
                         "💚 Ahorraste ${"%.2f".format(refuel.savedAmount)} €",
@@ -190,7 +359,7 @@ private fun EmptyHistory() {
             Spacer(Modifier.height(8.dp))
             Text("Aún no has registrado repostajes", color = Color.Gray)
             Text(
-                "Pulsa el botón + en una gasolinera",
+                "Pulsa el botón + para añadir el primero",
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodySmall
             )

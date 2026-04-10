@@ -15,4 +15,17 @@
     <string name="permiso_ubicacion">EkoPump-ek zure kokapena behar du hurbileko gasolindegia aurkitzeko</string>
     <string name="error_ubicacion">Ezin izan da kokapena lortu</string>
     <string name="error_red">Konexio errorea. Egiaztatu Internet konexioa</string>
+    <string name="registrar_repostaje">Hornidura erregistratu</string>
+    <string name="odometro_actual">Uneko kilometrajea (km)</string>
+    <string name="litros_repostados">Hornitutako litroak</string>
+    <string name="precio_litro">Litro bakoitzaren prezioa (€)</string>
+    <string name="guardar_repostaje">Hornidura gorde</string>
+    <string name="resumen_mes">Hilabeteko laburpena</string>
+    <string name="total_gastado">Guztira gastatu</string>
+    <string name="ahorro_estimado">Aurrezki estimatua</string>
+    <string name="consumo_medio_real">Batez besteko kontsumo erreala</string>
+    <string name="compartir_resumen">Hilabeteko laburpena partekatu</string>
+    <string name="autonomia_baja">Autonomia baxua</string>
+    <string name="autonomia_restante_km">~%1$d km geratzen dira</string>
+    <string name="consumo_sospechoso_advertencia">Kalkulatutako kontsumoa ezohikoa dirudi. Egiaztatu kilometrajea.</string>
 </resources>

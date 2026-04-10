@@ -15,4 +15,17 @@
     <string name="permiso_ubicacion">EkoPump needs your location to find nearby gas stations</string>
     <string name="error_ubicacion">Could not get your location</string>
     <string name="error_red">Connection error. Check your internet</string>
+    <string name="registrar_repostaje">Log refuel</string>
+    <string name="odometro_actual">Current odometer (km)</string>
+    <string name="litros_repostados">Liters refueled</string>
+    <string name="precio_litro">Price per liter (€)</string>
+    <string name="guardar_repostaje">Save refuel</string>
+    <string name="resumen_mes">Monthly summary</string>
+    <string name="total_gastado">Total spent</string>
+    <string name="ahorro_estimado">Estimated savings</string>
+    <string name="consumo_medio_real">Real avg consumption</string>
+    <string name="compartir_resumen">Share monthly summary</string>
+    <string name="autonomia_baja">Low range</string>
+    <string name="autonomia_restante_km">~%1$d km remaining</string>
+    <string name="consumo_sospechoso_advertencia">Calculated consumption seems unusual. Check the odometer.</string>
 </resources>

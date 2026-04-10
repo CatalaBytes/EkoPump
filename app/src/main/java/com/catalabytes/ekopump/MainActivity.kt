@@ -125,7 +125,8 @@ fun GasolinerasScreen(
     var mostrarIdiomas  by remember { mutableStateOf(false) }
     var gasolineraMapaSeleccionada by remember { mutableStateOf<com.catalabytes.ekopump.data.repository.GasolineraConDistancia?>(null) }
     var mostrarRepostarDesdeDetalle  by remember { mutableStateOf(false) }
-    var mostrarBrent    by remember { mutableStateOf(false) }
+    var mostrarBrent              by remember { mutableStateOf(false) }
+    var mostrarRegistrarRepostaje by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     var bannerTransportistaDismissed by remember { mutableStateOf(false) }
     LaunchedEffect(modoTransportista) { if (!modoTransportista) bannerTransportistaDismissed = false }
@@ -193,6 +194,12 @@ fun GasolinerasScreen(
     }
     if (mostrarBrent) {
         BrentHistorialScreen(viewModel = brentViewModel, onBack = { mostrarBrent = false })
+        return
+    }
+    if (mostrarRegistrarRepostaje) {
+        com.catalabytes.ekopump.ui.repostaje.RegistrarRepostajeScreen(
+            onBack = { mostrarRegistrarRepostaje = false }
+        )
         return
     }
 
@@ -376,7 +383,10 @@ fun GasolinerasScreen(
                         modifier = Modifier.align(Alignment.Center),
                         color = MaterialTheme.colorScheme.error)
                 }
-                2 -> HistoryScreen(viewModel = historyViewModel)
+                2 -> HistoryScreen(
+                    viewModel   = historyViewModel,
+                    onRegistrar = { mostrarRegistrarRepostaje = true }
+                )
                 3 -> when (val state = uiState) {
                     is UiState.Success -> FavoritasScreen(
                         gasolineras       = state.data,
@@ -384,7 +394,7 @@ fun GasolinerasScreen(
                         alertIds          = alertIds,
                         onGasolineraClick = { gasolineraMapaSeleccionada = it }
                     )
-                    else -> HistoryScreen(viewModel = historyViewModel)
+                    else -> HistoryScreen(viewModel = historyViewModel, onRegistrar = { mostrarRegistrarRepostaje = true })
                 }
                 4 -> PerfilScreen(viewModel = viewModel)
                 else -> when (val state = uiState) {

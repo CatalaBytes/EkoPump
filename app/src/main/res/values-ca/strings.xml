@@ -15,4 +15,17 @@
     <string name="permiso_ubicacion">EkoPump necessita la teva ubicació per trobar les gasolineres més properes</string>
     <string name="error_ubicacion">No s\'ha pogut obtenir la ubicació</string>
     <string name="error_red">Error de connexió. Comprova la teva internet</string>
+    <string name="registrar_repostaje">Registrar repostatge</string>
+    <string name="odometro_actual">Quilometratge actual (km)</string>
+    <string name="litros_repostados">Litres repostats</string>
+    <string name="precio_litro">Preu per litre (€)</string>
+    <string name="guardar_repostaje">Desar repostatge</string>
+    <string name="resumen_mes">Resum del mes</string>
+    <string name="total_gastado">Total gastat</string>
+    <string name="ahorro_estimado">Estalvi estimat</string>
+    <string name="consumo_medio_real">Consum mitjà real</string>
+    <string name="compartir_resumen">Compartir resum del mes</string>
+    <string name="autonomia_baja">Autonomia baixa</string>
+    <string name="autonomia_restante_km">~%1$d km restants</string>
+    <string name="consumo_sospechoso_advertencia">El consum calculat sembla inusual. Verifica el quilometratge.</string>
 </resources>

@@ -16,4 +16,17 @@
     <string name="error_ubicacion">No se pudo obtener la ubicación</string>
     <string name="error_red">Error de conexión. Comprueba tu internet</string>
     <string name="widget_description">Precio gasolina más barata cerca de ti</string>
+    <string name="registrar_repostaje">Registrar repostaje</string>
+    <string name="odometro_actual">Odómetro actual (km)</string>
+    <string name="litros_repostados">Litros repostados</string>
+    <string name="precio_litro">Precio por litro (€)</string>
+    <string name="guardar_repostaje">Guardar repostaje</string>
+    <string name="resumen_mes">Resumen del mes</string>
+    <string name="total_gastado">Total gastado</string>
+    <string name="ahorro_estimado">Ahorro estimado</string>
+    <string name="consumo_medio_real">Consumo medio real</string>
+    <string name="compartir_resumen">Compartir resumen del mes</string>
+    <string name="autonomia_baja">Autonomía baja</string>
+    <string name="autonomia_restante_km">~%1$d km restantes</string>
+    <string name="consumo_sospechoso_advertencia">El consumo calculado parece inusual. Verifica el odómetro.</string>
 </resources>
