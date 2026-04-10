@@ -23,7 +23,6 @@ import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
 import org.maplibre.android.maps.MapView
 import org.maplibre.android.style.expressions.Expression.*
-import org.maplibre.android.style.layers.CircleLayer
 import org.maplibre.android.style.layers.PropertyFactory.*
 import org.maplibre.android.style.layers.SymbolLayer
 import org.maplibre.android.style.sources.GeoJsonOptions
@@ -60,67 +59,45 @@ fun MapScreen(
                             style.addImage(g.id, crearMarcadorConPrecio(precioStr, item.esMasCercana))
                         }
 
-                        // ── 2. GeoJSON Source con clustering activado ─────────────
+                        // ── 2. Bitmaps para clusters (SymbolLayer, evita CircleLayer) ──
+                        style.addImage("cluster-s", crearBitmapCluster())
+                        style.addImage("cluster-m", crearBitmapCluster())
+                        style.addImage("cluster-l", crearBitmapCluster())
+
+                        // ── 3. GeoJSON Source con clustering activado ─────────────
                         val featureCollection = MapClusterHelper.buildFeatureCollection(gasolineras, combustible)
                         val source = GeoJsonSource(
                             "gasolineras-source",
-                            featureCollection,
+                            org.maplibre.geojson.FeatureCollection.fromFeatures(emptyList()),
                             GeoJsonOptions()
                                 .withCluster(true)
-                                .withClusterMaxZoom(13)
-                                .withClusterRadius(60)
+                                .withClusterMaxZoom(14)
+                                .withClusterRadius(50)
                         )
                         style.addSource(source)
+                        source.setGeoJson(featureCollection)
 
-                        // ── 3. Capa círculos de cluster ───────────────────────────
-                        val clusterCircles = CircleLayer("layer-clusters", "gasolineras-source").apply {
-                            setFilter(has("point_count"))
+                        // ── 4. Capa clusters como SymbolLayer con bitmap ───────────
+                        // Usar SymbolLayer en lugar de CircleLayer resuelve el problema
+                        // de orden de renderizado: ambas capas son SymbolLayer y MapLibre
+                        // gestiona la superposición correctamente entre ellas.
+                        val clusterLayer = SymbolLayer("layer-clusters", "gasolineras-source").apply {
+                            minZoom = 0f
+                            maxZoom = 13f
                             setProperties(
-                                circleColor(
-                                    step(
-                                        get("point_count"),
-                                        color(Color.parseColor("#388E3C")),   // verde  < 10
-                                        stop(10,  color(Color.parseColor("#F57C00"))), // naranja 10-49
-                                        stop(50,  color(Color.parseColor("#C62828")))  // rojo   50+
-                                    )
-                                ),
-                                circleRadius(
-                                    step(
-                                        get("point_count"),
-                                        literal(22f),
-                                        stop(10, literal(30f)),
-                                        stop(50, literal(38f))
-                                    )
-                                ),
-                                circleOpacity(0.88f),
-                                circleStrokeWidth(2.5f),
-                                circleStrokeColor(Color.WHITE)
+                                iconImage("cluster-s"),
+                                iconAllowOverlap(true),
+                                iconSize(1.0f)
                             )
                         }
-                        style.addLayer(clusterCircles)
+                        style.addLayer(clusterLayer)
 
-                        // ── 4. Capa texto contador cluster ────────────────────────
-                        val clusterCount = SymbolLayer("layer-cluster-count", "gasolineras-source").apply {
-                            setFilter(has("point_count"))
-                            setProperties(
-                                textField(toString(get("point_count"))),
-                                textSize(13f),
-                                textColor(Color.WHITE),
-                                textIgnorePlacement(true),
-                                textAllowOverlap(true)
-                            )
-                        }
-                        style.addLayer(clusterCount)
-
-                        // ── 5. Capa puntos individuales (sin cluster) ─────────────
+                        // ── 5. Capa puntos individuales ───────────────────────────
                         val individualPoints = SymbolLayer("gasolineras-layer", "gasolineras-source").apply {
-                            setFilter(not(has("point_count")))
+                            minZoom = 13f
+                            maxZoom = 22f
                             setProperties(
-                                iconImage(
-                                    // Mapea el índice del feature a su icono bitmap
-                                    // Usamos el id para reconstruir el índice
-                                    toString(get("id"))
-                                ),
+                                iconImage(toString(get("id"))),
                                 iconAllowOverlap(true),
                                 iconSize(1.0f)
                             )
@@ -146,7 +123,6 @@ fun MapScreen(
                         map.addOnMapClickListener { latLng ->
                             val pixel = map.projection.toScreenLocation(latLng)
 
-                            // Cluster → zoom in
                             val clusterFeatures = map.queryRenderedFeatures(pixel, "layer-clusters")
                             if (clusterFeatures.isNotEmpty()) {
                                 val currentZoom = map.cameraPosition.zoom
@@ -157,7 +133,6 @@ fun MapScreen(
                                 return@addOnMapClickListener true
                             }
 
-                            // Marker individual → BottomSheet
                             val markerFeatures = map.queryRenderedFeatures(pixel, "gasolineras-layer")
                             if (markerFeatures.isNotEmpty()) {
                                 val feature = markerFeatures.first()
@@ -173,9 +148,40 @@ fun MapScreen(
                     }
                 }
                 onStart()
+                onResume()
             }
         }
     )
+}
+
+private fun crearBitmapCluster(): Bitmap {
+    val size = 120
+    val radio = size / 2f
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    val paintFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#388E3C")
+        style = Paint.Style.FILL
+    }
+    val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        style = Paint.Style.STROKE
+        strokeWidth = 6f
+    }
+    val paintIcono = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.WHITE
+        textSize = 40f
+        textAlign = Paint.Align.CENTER
+    }
+
+    canvas.drawCircle(radio, radio, radio - 4f, paintFondo)
+    canvas.drawCircle(radio, radio, radio - 4f, paintBorde)
+
+    val textY = radio - (paintIcono.descent() + paintIcono.ascent()) / 2f
+    canvas.drawText("⛽", radio, textY, paintIcono)
+
+    return bitmap
 }
 
 private fun crearMarcadorConPrecio(precio: String, esBarata: Boolean): Bitmap {

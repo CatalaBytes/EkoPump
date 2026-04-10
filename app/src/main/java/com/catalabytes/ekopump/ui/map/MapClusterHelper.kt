@@ -21,6 +21,7 @@ object MapClusterHelper {
                 addStringProperty("nombre", g.nombre)
                 addStringProperty("precio", precioStr)
                 addBooleanProperty("esBarata", item.esMasCercana)
+                addBooleanProperty("isIndividual", true)
             }
         }
         return FeatureCollection.fromFeatures(features)
