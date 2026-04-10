@@ -13,13 +13,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catalabytes.ekopump.viewmodel.BrentViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun BrentWidget(
     viewModel: BrentViewModel,
     onClick: () -> Unit = {}
 ) {
-    val brent by viewModel.brent.collectAsState()
+    val brent         by viewModel.brent.collectAsState()
+    val lastRefreshMs by viewModel.lastRefreshMs.collectAsState()
 
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -36,13 +40,19 @@ fun BrentWidget(
             if (brent == null) {
                 Text("🛢 Brent: —", color = Color.White, fontSize = 11.sp)
             } else {
-                val b = brent!!
+                val b        = brent!!
                 val subiendo = b.variacion >= 0
-                val color = if (subiendo) Color(0xFFFF6B35) else Color(0xFF4CAF50)
-                val flecha = if (subiendo) "▲" else "▼"
+                val color    = if (subiendo) Color(0xFFFF6B35) else Color(0xFF4CAF50)
+                val flecha   = if (subiendo) "▲" else "▼"
+
                 Text("🛢 Brent", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Medium)
                 Text("${"%.2f".format(b.precio)}$", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
                 Text("$flecha ${"%.2f".format(b.variacionPct)}%", color = color, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+
+                if (lastRefreshMs > 0L) {
+                    val hora = SimpleDateFormat("HH:mm", Locale.getDefault()).format(Date(lastRefreshMs))
+                    Text("· ${hora}h", color = Color(0xFF90A4AE), fontSize = 10.sp)
+                }
             }
         }
     }
