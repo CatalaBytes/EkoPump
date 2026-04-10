@@ -114,6 +114,8 @@ fun GasolinerasScreen(
     val uiState     by viewModel.uiState.collectAsState()
     val combustible by viewModel.combustible.collectAsState()
     val radioKm     by viewModel.radioKm.collectAsState()
+    val alertIds      by viewModel.alertIds.collectAsState()
+    val lastRefreshMs by viewModel.lastRefreshMs.collectAsState()
     var tabActual   by remember { mutableStateOf(0) }
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
@@ -163,7 +165,12 @@ fun GasolinerasScreen(
                 item        = item,
                 combustible = combustible,
                 onRepostar  = { mostrarRepostarDesdeDetalle = true },
-                onDismiss   = { gasolineraMapaSeleccionada = null }
+                onDismiss   = { gasolineraMapaSeleccionada = null },
+                hasAlert    = alertIds.contains(item.gasolinera.id),
+                onSetAlert  = { umbral ->
+                    viewModel.setAlert(item.gasolinera.id, item.gasolinera.nombre, combustible.name, umbral)
+                },
+                onRemoveAlert = { viewModel.removeAlert(item.gasolinera.id) }
             )
         }
     }
@@ -259,6 +266,24 @@ fun GasolinerasScreen(
                         )
                     )
                 }
+                // ── Timestamp última actualización ───────────────────────
+                if (lastRefreshMs > 0L) {
+                    val ahoraMs = System.currentTimeMillis()
+                    val diffMin = ((ahoraMs - lastRefreshMs) / 60_000L).toInt()
+                    val textoActualizado = when {
+                        diffMin < 1  -> "Actualizado: ahora mismo"
+                        diffMin == 1 -> "Actualizado: hace 1 min"
+                        else         -> "Actualizado: hace $diffMin min"
+                    }
+                    Text(
+                        text = textoActualizado,
+                        color = Color(0xFF4CAF50),
+                        fontSize = 11.sp,
+                        modifier = androidx.compose.ui.Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 2.dp)
+                    )
+                }
             }
         },
         bottomBar = {
@@ -312,6 +337,7 @@ fun GasolinerasScreen(
                     is UiState.Success -> FavoritasScreen(
                         gasolineras       = state.data,
                         combustible       = combustible,
+                        alertIds          = alertIds,
                         onGasolineraClick = { gasolineraMapaSeleccionada = it }
                     )
                     else -> HistoryScreen(viewModel = historyViewModel)

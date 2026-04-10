@@ -167,11 +167,11 @@ private fun crearBitmapCluster(): Bitmap {
     val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
         style = Paint.Style.STROKE
-        strokeWidth = 6f
+        strokeWidth = 4f
     }
     val paintIcono = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         color = Color.WHITE
-        textSize = 40f
+        textSize = 36f
         textAlign = Paint.Align.CENTER
     }
 

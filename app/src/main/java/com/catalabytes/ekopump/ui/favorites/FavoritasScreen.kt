@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,6 +27,7 @@ private val EkoCard   = Color(0xFF1B2E1C)
 fun FavoritasScreen(
     gasolineras: List<GasolineraConDistancia>,
     combustible: Combustible,
+    alertIds: Set<String> = emptySet(),
     onGasolineraClick: (GasolineraConDistancia) -> Unit
 ) {
     val context = LocalContext.current
@@ -102,12 +104,23 @@ fun FavoritasScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = g.nombre,
-                                    fontSize = 15.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFF0FDF4)
-                                )
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = g.nombre,
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFF0FDF4)
+                                    )
+                                    if (alertIds.contains(g.id)) {
+                                        Spacer(Modifier.width(6.dp))
+                                        Icon(
+                                            Icons.Default.Notifications,
+                                            contentDescription = "Alerta activa",
+                                            tint = Color(0xFFFFB300),
+                                            modifier = Modifier.size(14.dp)
+                                        )
+                                    }
+                                }
                                 Text(
                                     text = g.localidad,
                                     fontSize = 13.sp,

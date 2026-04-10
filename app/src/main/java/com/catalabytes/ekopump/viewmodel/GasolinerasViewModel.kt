@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.catalabytes.ekopump.data.location.LocationProvider
 import com.catalabytes.ekopump.data.prefs.CalculadorPrefs
+import com.catalabytes.ekopump.data.prefs.PriceAlertPrefs
 import com.catalabytes.ekopump.data.prefs.PriceHistoryPrefs
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
@@ -11,12 +12,14 @@ import com.catalabytes.ekopump.data.repository.GasolinerasRepository
 import com.catalabytes.ekopump.domain.model.EnergyType
 import com.catalabytes.ekopump.domain.model.TendenciaPrecio
 import com.catalabytes.ekopump.domain.model.VehicleType
+import com.catalabytes.ekopump.notifications.PriceAlertChecker
 import com.catalabytes.ekopump.ui.common.UiState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -27,7 +30,9 @@ class GasolinerasViewModel @Inject constructor(
     private val repository: GasolinerasRepository,
     private val locationProvider: LocationProvider,
     private val calculadorPrefs: CalculadorPrefs,
-    private val priceHistoryPrefs: PriceHistoryPrefs
+    private val priceHistoryPrefs: PriceHistoryPrefs,
+    private val priceAlertPrefs: PriceAlertPrefs,
+    private val priceAlertChecker: PriceAlertChecker
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<UiState<List<GasolineraConDistancia>>>(UiState.Loading)
@@ -44,6 +49,9 @@ class GasolinerasViewModel @Inject constructor(
 
     private val _tendencias = MutableStateFlow<Map<String, TendenciaPrecio>>(emptyMap())
     val tendencias: StateFlow<Map<String, TendenciaPrecio>> = _tendencias
+
+    private val _alertIds = MutableStateFlow<Set<String>>(emptySet())
+    val alertIds: StateFlow<Set<String>> = _alertIds.asStateFlow()
 
     val consumo: StateFlow<Float> = calculadorPrefs.consumo
         .stateIn(viewModelScope, SharingStarted.Eagerly, 7f)
@@ -67,12 +75,24 @@ class GasolinerasViewModel @Inject constructor(
     private val _radioKm = MutableStateFlow(10.0)
     val radioKm: StateFlow<Double> = _radioKm.asStateFlow()
 
+    private val _lastRefreshMs = MutableStateFlow(0L)
+    val lastRefreshMs: StateFlow<Long> = _lastRefreshMs.asStateFlow()
+
+    init {
+        _alertIds.value = priceAlertPrefs.getAlertIds()
+        cargar()
+        viewModelScope.launch {
+            while (true) {
+                delay(20 * 60 * 1000L)
+                cargar()
+            }
+        }
+    }
+
     fun setRadioKm(km: Double) {
         _radioKm.value = km
         cargar()
     }
-
-    init { cargar() }
 
     fun cargar() {
         viewModelScope.launch {
@@ -85,11 +105,23 @@ class GasolinerasViewModel @Inject constructor(
                 }
                 val data = repository.getGasolinerasCercanas(_combustible.value, _radioKm.value)
                 _uiState.value = UiState.Success(data)
+                _lastRefreshMs.value = System.currentTimeMillis()
                 calcularTendencias(data)
+                priceAlertChecker.checkAlerts(data)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Error desconocido")
             }
         }
+    }
+
+    fun setAlert(gasolineraId: String, nombre: String, combustible: String, precioUmbral: Double) {
+        priceAlertPrefs.savePriceAlert(gasolineraId, nombre, combustible, precioUmbral)
+        _alertIds.value = priceAlertPrefs.getAlertIds()
+    }
+
+    fun removeAlert(gasolineraId: String) {
+        priceAlertPrefs.removePriceAlert(gasolineraId)
+        _alertIds.value = priceAlertPrefs.getAlertIds()
     }
 
     private fun calcularTendencias(lista: List<GasolineraConDistancia>) {
@@ -119,7 +151,6 @@ class GasolinerasViewModel @Inject constructor(
     fun setVehicleType(tipo: VehicleType) {
         viewModelScope.launch { calculadorPrefs.setVehicleType(tipo.name) }
     }
-
     fun setEnergyType(tipo: EnergyType?) {
         viewModelScope.launch { calculadorPrefs.setEnergyType(tipo?.name) }
     }
