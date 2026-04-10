@@ -61,20 +61,34 @@ class BrentRepository @Inject constructor(
     suspend fun getBrentPrice(): BrentPrice? = withContext(Dispatchers.IO) {
         try {
             val body   = fetchRaw() ?: return@withContext null
-            val meta   = JSONObject(body)
+            val result = JSONObject(body)
                 .getJSONObject("chart")
                 .getJSONArray("result")
                 .getJSONObject(0)
-                .getJSONObject("meta")
 
-            val precio         = meta.getDouble("regularMarketPrice")
-            val cierrePrevio   = meta.optDouble("previousClose").takeIf { !it.isNaN() }
-                ?: meta.optDouble("chartPreviousClose").takeIf { !it.isNaN() }
-                ?: precio
-            val variacion      = precio - cierrePrevio
-            val variacionPct   = if (cierrePrevio != 0.0) (variacion / cierrePrevio) * 100.0 else 0.0
+            val precio = result.getJSONObject("meta").getDouble("regularMarketPrice")
 
-            android.util.Log.d("BrentRepository", "precio=$precio var=$variacion pct=$variacionPct")
+            // Variación real: dos últimos cierres válidos del historial diario.
+            // meta.previousClose apunta al cierre del contrato anterior (rollover)
+            // y produce variaciones falsas del 40%+ en días de vencimiento.
+            val closes = result
+                .getJSONObject("indicators")
+                .getJSONArray("quote")
+                .getJSONObject(0)
+                .getJSONArray("close")
+
+            // Recorrer hacia atrás para encontrar los dos últimos valores no-NaN
+            val validos = mutableListOf<Double>()
+            for (i in closes.length() - 1 downTo 0) {
+                val v = closes.optDouble(i)
+                if (!v.isNaN()) { validos.add(v); if (validos.size == 2) break }
+            }
+            val hoy   = validos.getOrNull(0) ?: precio
+            val ayer  = validos.getOrNull(1) ?: hoy
+            val variacion    = hoy - ayer
+            val variacionPct = if (ayer != 0.0) (variacion / ayer) * 100.0 else 0.0
+
+            android.util.Log.d("BrentRepository", "precio=$precio hoy=$hoy ayer=$ayer pct=$variacionPct")
             BrentPrice(precio, variacion, variacionPct)
         } catch (e: Exception) {
             android.util.Log.e("BrentRepository", "getBrentPrice error: ${e.message}", e)
