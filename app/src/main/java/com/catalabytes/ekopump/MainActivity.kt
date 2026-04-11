@@ -47,7 +47,9 @@ import com.catalabytes.ekopump.ui.map.GasolineraDetailSheet
 import com.catalabytes.ekopump.ui.history.HistoryScreen
 import com.catalabytes.ekopump.ui.favorites.FavoritasScreen
 import com.catalabytes.ekopump.ui.history.HistoryViewModel
+import com.catalabytes.ekopump.ui.map.ComingSoonSheet
 import com.catalabytes.ekopump.ui.map.MapScreen
+import com.catalabytes.ekopump.domain.model.MapLayer
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
 import com.catalabytes.ekopump.ui.settings.CalculadorDialog
 import com.catalabytes.ekopump.domain.calcularAhorro
@@ -138,6 +140,8 @@ fun GasolinerasScreen(
     val userLat    by viewModel.userLat.collectAsState()
     val userLon    by viewModel.userLon.collectAsState()
     val energyType by viewModel.energyType.collectAsState()
+    var capaActiva       by remember { mutableStateOf(MapLayer.GASOLINERAS) }
+    var comingSoonLayer  by remember { mutableStateOf<MapLayer?>(null) }
 
     val permisosLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -195,6 +199,9 @@ fun GasolinerasScreen(
 
     if (mostrarIdiomas) {
         LanguageSelectorDialog(onDismiss = { mostrarIdiomas = false })
+    }
+    comingSoonLayer?.let { layer ->
+        ComingSoonSheet(layer = layer, onDismiss = { comingSoonLayer = null })
     }
     if (mostrarBrent) {
         BrentHistorialScreen(viewModel = brentViewModel, onBack = { mostrarBrent = false })
@@ -372,7 +379,16 @@ fun GasolinerasScreen(
                         userLat            = userLat,
                         userLon            = userLon,
                         locationDisponible = gpsDisponible,
-                        energyType         = energyType,
+                        capaActiva         = capaActiva,
+                        onCapaChanged      = { layer ->
+                            capaActiva = layer
+                            when (layer) {
+                                MapLayer.ELECTRICO   -> viewModel.setEnergyType(com.catalabytes.ekopump.domain.model.EnergyType.EV)
+                                MapLayer.GASOLINERAS -> viewModel.setEnergyType(null)
+                                else                 -> {}
+                            }
+                        },
+                        onComingSoonLayer  = { layer -> comingSoonLayer = layer },
                         onGasolineraClick  = { gasolineraMapaSeleccionada = it }
                     )
                     is UiState.Loading -> CircularProgressIndicator(

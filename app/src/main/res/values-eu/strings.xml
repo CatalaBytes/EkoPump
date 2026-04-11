@@ -134,4 +134,21 @@ Elektrikoa</string>
     <string name="hist_borrar_confirmar">Ezabatu</string>
     <string name="widget_description">Hurbileko gasolina merkeenaren prezioa</string>
     <string name="idioma_reiniciando">Hizkuntza aplikatzen…</string>
+    <string name="layer_gasolineras">Gasolindegia</string>
+    <string name="layer_gasolineras_desc">%1$d gasolindegia hurbileko prezio errealak</string>
+    <string name="layer_electrico">EV karga</string>
+    <string name="layer_electrico_desc">Karga elektrikoko puntuak zure eremuan</string>
+    <string name="layer_bici">Bizikletak</string>
+    <string name="layer_bici_desc">Bizikleta publiko alokairuko puntuak</string>
+    <string name="layer_bus">Autobusa</string>
+    <string name="layer_bus_desc">Hurbileko autobus geltokiak eta lerroak</string>
+    <string name="layer_tren">Trena / Metroa</string>
+    <string name="layer_tren_desc">Hurbileko tren eta metro geltokiak</string>
+    <string name="layer_peatonal">Oinez</string>
+    <string name="layer_peatonal_desc">Oinezkoen ibilbide optimizatuak</string>
+    <string name="layer_proximamente">Laster</string>
+    <string name="layer_en_desarrollo">Garatzen</string>
+    <string name="layer_avisar">🔔 Abistu prestatuta dagoenean</string>
+    <string name="layer_ver_roadmap">Zer eraikitzen ari garen ikusi →</string>
+    <string name="layer_avisado">✓ Abisatuko zaitugu iristean</string>
 </resources>

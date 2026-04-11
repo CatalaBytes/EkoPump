@@ -134,4 +134,21 @@ Elèctric</string>
     <string name="hist_borrar_confirmar">Eliminar</string>
     <string name="widget_description">Preu gasolina més barata prop teu</string>
     <string name="idioma_reiniciando">Aplicant idioma…</string>
+    <string name="layer_gasolineras">Gasolineres</string>
+    <string name="layer_gasolineras_desc">Preus en temps real de %1$d gasolineres properes</string>
+    <string name="layer_electrico">Recàrrega EV</string>
+    <string name="layer_electrico_desc">Punts de càrrega elèctrica a la teva zona</string>
+    <string name="layer_bici">Bicicletes</string>
+    <string name="layer_bici_desc">Punts de lloguer de bicicleta pública</string>
+    <string name="layer_bus">Autobús</string>
+    <string name="layer_bus_desc">Parades i línies d’autobús properes</string>
+    <string name="layer_tren">Tren / Metro</string>
+    <string name="layer_tren_desc">Estacions de tren i metro properes</string>
+    <string name="layer_peatonal">A peu</string>
+    <string name="layer_peatonal_desc">Rutes a peu optimitzades</string>
+    <string name="layer_proximamente">Properament</string>
+    <string name="layer_en_desarrollo">En desenvolupament</string>
+    <string name="layer_avisar">🔔 Avisar-me quan estigui llest</string>
+    <string name="layer_ver_roadmap">Veure què estem construint →</string>
+    <string name="layer_avisado">✓ T’avisarem quan arribi</string>
 </resources>

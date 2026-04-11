@@ -134,4 +134,21 @@ Eléctrico</string>
     <string name="hist_borrar_desc">Esta acción no se puede deshacer.</string>
     <string name="hist_borrar_confirmar">Borrar</string>
     <string name="idioma_reiniciando">Aplicando idioma…</string>
+    <string name="layer_gasolineras">Gasolineras</string>
+    <string name="layer_gasolineras_desc">Precios en tiempo real de %1$d gasolineras cercanas</string>
+    <string name="layer_electrico">Recarga EV</string>
+    <string name="layer_electrico_desc">Puntos de carga eléctrica en tu zona</string>
+    <string name="layer_bici">Bicicletas</string>
+    <string name="layer_bici_desc">Puntos de alquiler de bicicleta pública</string>
+    <string name="layer_bus">Autobús</string>
+    <string name="layer_bus_desc">Paradas y líneas de autobús cercanas</string>
+    <string name="layer_tren">Tren / Metro</string>
+    <string name="layer_tren_desc">Estaciones de tren y metro próximas</string>
+    <string name="layer_peatonal">A pie</string>
+    <string name="layer_peatonal_desc">Rutas peatonales optimizadas</string>
+    <string name="layer_proximamente">Próximamente</string>
+    <string name="layer_en_desarrollo">En desarrollo</string>
+    <string name="layer_avisar">🔔 Avisarme cuando esté listo</string>
+    <string name="layer_ver_roadmap">Ver qué estamos construyendo →</string>
+    <string name="layer_avisado">✓ Te avisaremos cuando llegue</string>
 </resources>

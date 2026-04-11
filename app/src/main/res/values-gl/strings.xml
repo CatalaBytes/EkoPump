@@ -134,4 +134,21 @@ Eléctrico</string>
     <string name="hist_borrar_confirmar">Borrar</string>
     <string name="widget_description">Prezo gasolina máis barata preto de ti</string>
     <string name="idioma_reiniciando">Aplicando idioma…</string>
+    <string name="layer_gasolineras">Gasolineiras</string>
+    <string name="layer_gasolineras_desc">Prezos en tempo real de %1$d gasolineiras próximas</string>
+    <string name="layer_electrico">Recarga EV</string>
+    <string name="layer_electrico_desc">Puntos de carga eléctrica na túa zona</string>
+    <string name="layer_bici">Bicicletas</string>
+    <string name="layer_bici_desc">Puntos de aluguer de bicicleta pública</string>
+    <string name="layer_bus">Autobús</string>
+    <string name="layer_bus_desc">Paradas e liñas de autobús próximas</string>
+    <string name="layer_tren">Tren / Metro</string>
+    <string name="layer_tren_desc">Estacións de tren e metro próximas</string>
+    <string name="layer_peatonal">A pé</string>
+    <string name="layer_peatonal_desc">Rutas a pé optimizadas</string>
+    <string name="layer_proximamente">En breve</string>
+    <string name="layer_en_desarrollo">En desenvolvemento</string>
+    <string name="layer_avisar">🔔 Avisarme cando estea listo</string>
+    <string name="layer_ver_roadmap">Ver que estamos construíndo →</string>
+    <string name="layer_avisado">✓ Avisa rémoste cando chegue</string>
 </resources>

@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EkoPump Roadmap — Qué estamos construyendo</title>
+  <meta name="description" content="EkoPump siempre mejora. Descubre qué funciones están disponibles, cuáles están en desarrollo y qué viene próximamente." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --green-glow: #bbf7d0;
+      --bg: #070f09;
+      --surface: #0d1a0f;
+      --surface2: #122017;
+      --border: rgba(34,197,94,0.15);
+      --text: #f0fdf4;
+      --muted: #6b8f72;
+      --accent: #4ade80;
+      --amber: #f59e0b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      overflow-x: hidden;
+      line-height: 1.6;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(7,15,9,0.90);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.6rem; font-weight: 800; letter-spacing: 0.04em;
+      color: var(--green); text-decoration: none;
+    }
+    .logo span { color: var(--text); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 500;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover, .nav-links a.active { color: var(--green); }
+    .nav-cta {
+      background: var(--green); color: #052e16;
+      padding: 0.5rem 1.25rem; border-radius: 6px;
+      font-weight: 700; font-size: 0.85rem; text-decoration: none;
+      transition: background 0.2s, transform 0.1s;
+      font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.05em;
+    }
+    .nav-cta:hover { background: var(--accent); transform: translateY(-1px); }
+    @media(max-width:640px) { .nav-links { display: none; } nav { padding: 1rem; } }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .footer-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 800; color: var(--green); }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .footer-links a { font-size: 0.85rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--green); }
+    .footer-copy { font-size: 0.8rem; color: var(--muted); }
+
+    /* PAGE */
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 7rem 1.5rem 5rem;
+    }
+
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(34,197,94,0.1);
+      border: 1px solid rgba(34,197,94,0.25);
+      color: var(--green); padding: 0.35rem 1rem; border-radius: 999px;
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2.8rem, 8vw, 5rem);
+      font-weight: 800; line-height: 1;
+      letter-spacing: -0.01em;
+      margin-bottom: 1rem;
+    }
+    h1 em { color: var(--green); font-style: normal; }
+
+    .subtitle {
+      font-size: 1.1rem; color: var(--muted); max-width: 600px;
+      margin-bottom: 3.5rem; line-height: 1.7;
+    }
+    .subtitle strong { color: var(--text); }
+
+    /* SECTION HEADERS */
+    .section-label {
+      display: flex; align-items: center; gap: 0.75rem;
+      margin-bottom: 1.25rem; margin-top: 3rem;
+    }
+    .section-label .badge {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.25rem 0.75rem; border-radius: 999px;
+    }
+    .badge-green  { background: rgba(34,197,94,0.15);  color: var(--green); border: 1px solid rgba(34,197,94,0.3); }
+    .badge-amber  { background: rgba(245,158,11,0.15); color: var(--amber); border: 1px solid rgba(245,158,11,0.3); }
+    .badge-gray   { background: rgba(107,143,114,0.1); color: var(--muted); border: 1px solid rgba(107,143,114,0.2); }
+    .section-label hr { flex: 1; border: none; border-top: 1px solid var(--border); }
+
+    /* FEATURE GRID */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .feature-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      display: flex; align-items: flex-start; gap: 0.85rem;
+    }
+    .feature-card .icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .feature-card .title { font-weight: 600; font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .feature-card .desc  { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+    .feature-card.green-glow { border-color: rgba(34,197,94,0.25); }
+    .feature-card.amber-glow { border-color: rgba(245,158,11,0.2); }
+
+    /* PROMISE */
+    .promise-box {
+      background: var(--surface);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      margin-top: 3.5rem;
+      text-align: center;
+    }
+    .promise-box h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.8rem; font-weight: 800; color: var(--green);
+      margin-bottom: 0.75rem;
+    }
+    .promise-box p { color: var(--muted); font-size: 1rem; max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+    /* NEWSLETTER */
+    .newsletter {
+      margin-top: 3.5rem;
+      background: linear-gradient(135deg, rgba(34,197,94,0.06) 0%, rgba(34,197,94,0.02) 100%);
+      border: 1px solid rgba(34,197,94,0.2);
+      border-radius: 16px;
+      padding: 2rem 2.5rem;
+      text-align: center;
+    }
+    .newsletter h2 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem;
+    }
+    .newsletter p { color: var(--muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+    .newsletter form {
+      display: flex; gap: 0.75rem; flex-wrap: wrap; justify-content: center; max-width: 480px; margin: 0 auto;
+    }
+    .newsletter input[type="email"] {
+      flex: 1; min-width: 220px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); border-radius: 8px;
+      padding: 0.7rem 1rem; font-size: 0.95rem; font-family: 'DM Sans', sans-serif;
+      outline: none; transition: border-color 0.2s;
+    }
+    .newsletter input[type="email"]:focus { border-color: var(--green); }
+    .newsletter input[type="email"]::placeholder { color: var(--muted); }
+    .newsletter button {
+      background: var(--green); color: #052e16;
+      border: none; border-radius: 8px;
+      padding: 0.7rem 1.5rem; font-size: 0.95rem; font-weight: 700;
+      font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.05em;
+      cursor: pointer; transition: background 0.2s, transform 0.1s;
+    }
+    .newsletter button:hover { background: var(--accent); transform: translateY(-1px); }
+    .newsletter .note { font-size: 0.75rem; color: var(--muted); margin-top: 0.75rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="logo">Eko<span>Pump</span></a>
+  <ul class="nav-links">
+    <li><a href="/">Inicio</a></li>
+    <li><a href="/roadmap" class="active">Roadmap</a></li>
+    <li><a href="privacy.html">Privacidad</a></li>
+  </ul>
+  <a href="https://play.google.com/apps/internaltest/4701246384116421108" class="nav-cta">DESCARGAR</a>
+</nav>
+
+<div class="page-wrap">
+
+  <div class="eyebrow">🗺️ Roadmap público</div>
+  <h1>EkoPump siempre <em>mejora.</em></h1>
+  <p class="subtitle">
+    Construimos EkoPump en abierto. <strong>Puedes ver exactamente qué estamos haciendo
+    y cuándo llegará a tu móvil.</strong> Sin sorpresas.
+  </p>
+
+  <!-- DISPONIBLE AHORA -->
+  <div class="section-label">
+    <span class="badge badge-green">✅ Disponible ahora</span>
+    <hr />
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card green-glow">
+      <span class="icon">⛽</span>
+      <div><div class="title">Gasolineras más baratas en tiempo real</div>
+      <div class="desc">~10.000 estaciones de España. Datos oficiales MINETUR actualizados cada hora.</div></div>
+    </div>
+    <div class="feature-card green-glow">
+      <span class="icon">🗺️</span>
+      <div><div class="title">Mapa interactivo con precios</div>
+      <div class="desc">Hub de movilidad con toggles de capas. Zoom, clustering y click para detalles.</div></div>
+    </div>
+    <div class="feature-card green-glow">
+      <span class="icon">💶</span>
+      <div><div class="title">Calculadora de ahorro real</div>
+      <div class="desc">Introduce tu consumo y depósito. Ahorro calculado al céntimo incluyendo el coste del desvío.</div></div>
+    </div>
+    <div class="feature-card green-glow">
+      <span class="icon">📊</span>
+      <div><div class="title">Historial de repostajes</div>
+      <div class="desc">Registra cada repostaje. Estadísticas mensuales de gasto, ahorro y consumo real.</div></div>
+    </div>
+    <div class="feature-card green-glow">
+      <span class="icon">🛢️</span>
+      <div><div class="title">Widget precio Brent</div>
+      <div class="desc">Precio del petróleo Brent con gráfico de los últimos 30 días.</div></div>
+    </div>
+    <div class="feature-card green-glow">
+      <span class="icon">🌍</span>
+      <div><div class="title">5 idiomas</div>
+      <div class="desc">Español · Català · Euskera · Galego · English. Banderas regionales propias.</div></div>
+    </div>
+    <div class="feature-card green-glow">
+      <span class="icon">🚫</span>
+      <div><div class="title">Sin anuncios. Siempre gratis.</div>
+      <div class="desc">EkoPump es libre porque ahorrar dinero no debería costar dinero.</div></div>
+    </div>
+  </div>
+
+  <!-- EN DESARROLLO -->
+  <div class="section-label">
+    <span class="badge badge-amber">🔄 En desarrollo</span>
+    <hr />
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card amber-glow">
+      <span class="icon">⚡</span>
+      <div><div class="title">Puntos de recarga EV</div>
+      <div class="desc">Cargadores eléctricos en el mapa via OpenChargeMap. Ya en beta, mejorando la capa.</div></div>
+    </div>
+    <div class="feature-card amber-glow">
+      <span class="icon">🔔</span>
+      <div><div class="title">Alertas inteligentes de precio</div>
+      <div class="desc">Notificación push cuando el precio en tu gasolinera favorita baje del umbral que marques.</div></div>
+    </div>
+    <div class="feature-card amber-glow">
+      <span class="icon">🚛</span>
+      <div><div class="title">Modo transportista profesional</div>
+      <div class="desc">GNC / GNL / AdBlue en filtros. Cálculo de ahorro adaptado a furgonetas y camiones.</div></div>
+    </div>
+  </div>
+
+  <!-- PRÓXIMAMENTE -->
+  <div class="section-label">
+    <span class="badge badge-gray">🔜 Próximamente</span>
+    <hr />
+  </div>
+  <div class="feature-grid">
+    <div class="feature-card">
+      <span class="icon">🚲</span>
+      <div><div class="title">Bicicletas públicas</div>
+      <div class="desc">Bicing (Barcelona), Valenbisi, BiciMAD (Madrid) y más redes de alquiler público.</div></div>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🚌</span>
+      <div><div class="title">Paradas de autobús</div>
+      <div class="desc">Paradas y líneas de autobús urbano e interurbano cerca de tu ubicación.</div></div>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🚂</span>
+      <div><div class="title">Trenes y metro</div>
+      <div class="desc">Estaciones de Renfe, FGC, EMT, Metro de Madrid, Barcelona y más ciudades.</div></div>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🔀</span>
+      <div><div class="title">Rutas multimodal</div>
+      <div class="desc">Combina coche + transporte público para encontrar la opción más barata y rápida.</div></div>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🚗</span>
+      <div><div class="title">Android Auto</div>
+      <div class="desc">Gasolineras más baratas en tu pantalla del coche sin tocar el móvil.</div></div>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🇫🇷</span>
+      <div><div class="title">Expansión Francia y Portugal</div>
+      <div class="desc">Datos oficiales de carburantes de los países vecinos.</div></div>
+    </div>
+    <div class="feature-card">
+      <span class="icon">🚶</span>
+      <div><div class="title">Rutas peatonales optimizadas</div>
+      <div class="desc">Calcula si te compensa ir a pie a la gasolinera según el ahorro y la distancia.</div></div>
+    </div>
+  </div>
+
+  <!-- PROMESA -->
+  <div class="promise-box">
+    <h2>Nuestra promesa</h2>
+    <p>EkoPump es gratis porque creemos que ahorrar dinero no debería costar dinero.
+    Cuando pagues, será por funciones extra, <strong style="color:var(--text);">nunca para eliminar anuncios.</strong>
+    Nunca vendemos tus datos. Nunca lo haremos.</p>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="newsletter">
+    <h2>Recibir novedades</h2>
+    <p>Entérate cuando llegue la próxima función. Sin spam, solo actualizaciones importantes.</p>
+    <!-- PENDIENTE: añadir Formspree form ID -->
+    <form action="#" method="POST">
+      <input type="email" name="email" placeholder="tu@email.com" required />
+      <button type="submit">AVISARME</button>
+    </form>
+    <div class="note">Solo usamos tu email para novedades de EkoPump. Cancela cuando quieras.</div>
+  </div>
+
+</div><!-- /.page-wrap -->
+
+<footer>
+  <div class="footer-logo">EkoPump</div>
+  <div class="footer-links">
+    <a href="privacy.html">Política de privacidad</a>
+    <a href="/roadmap" style="color:var(--green);">Roadmap</a>
+    <a href="https://github.com/CatalaBytes/EkoPump">GitHub</a>
+    <a href="mailto:hola@ekopump.es">Contacto</a>
+  </div>
+  <div class="footer-copy">© 2026 EkoPump · ekopump.es</div>
+</footer>
+
+</body>
+</html>

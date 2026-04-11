@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MyLocation
 import androidx.compose.material3.FloatingActionButton
@@ -27,7 +28,7 @@ import com.catalabytes.ekopump.data.ev.ChargePoint
 import com.catalabytes.ekopump.data.ev.OpenChargeMapRepository
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
-import com.catalabytes.ekopump.domain.model.EnergyType
+import com.catalabytes.ekopump.domain.model.MapLayer
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -54,7 +55,9 @@ fun MapScreen(
     userLat: Double,
     userLon: Double,
     locationDisponible: Boolean = false,
-    energyType: EnergyType? = null,
+    capaActiva: MapLayer = MapLayer.GASOLINERAS,
+    onCapaChanged: (MapLayer) -> Unit = {},
+    onComingSoonLayer: (MapLayer) -> Unit = {},
     onGasolineraClick: (GasolineraConDistancia) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -64,10 +67,10 @@ fun MapScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Carga puntos de carga EV cuando el usuario activa EnergyType.EV
+    // Carga puntos de carga EV cuando la capa activa es ELECTRICO
     var chargePoints by remember { mutableStateOf<List<ChargePoint>>(emptyList()) }
-    LaunchedEffect(energyType, userLat, userLon) {
-        if (energyType == EnergyType.EV && userLat != 0.0 && userLon != 0.0) {
+    LaunchedEffect(capaActiva, userLat, userLon) {
+        if (capaActiva == MapLayer.ELECTRICO && userLat != 0.0 && userLon != 0.0) {
             chargePoints = withContext(Dispatchers.IO) {
                 OpenChargeMapRepository.fetchCercanos(userLat, userLon)
             }
@@ -80,7 +83,6 @@ fun MapScreen(
     LaunchedEffect(chargePoints, mapInstance) {
         val map = mapInstance ?: return@LaunchedEffect
         map.getStyle { style ->
-            // Limpiar capa anterior si existe
             style.removeLayer("ev-layer")
             style.removeSource("ev-source")
 
@@ -226,6 +228,19 @@ fun MapScreen(
                     onResume()
                 }
             }
+        )
+
+        // ── Barra de capas superpuesta arriba ────────────────────────────
+        MapLayerToggleBar(
+            capaActiva = capaActiva,
+            onCapaSelected = { layer ->
+                if (layer.activo) onCapaChanged(layer)
+                else onComingSoonLayer(layer)
+            },
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .statusBarsPadding()
+                .padding(top = 8.dp)
         )
 
         // ── FAB: volver a mi ubicación GPS ───────────────────────────────

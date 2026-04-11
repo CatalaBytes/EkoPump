@@ -134,4 +134,21 @@ Vehicle</string>
     <string name="hist_borrar_confirmar">Delete</string>
     <string name="widget_description">Cheapest nearby fuel price</string>
     <string name="idioma_reiniciando">Applying language…</string>
+    <string name="layer_gasolineras">Fuel stations</string>
+    <string name="layer_gasolineras_desc">Real-time prices for %1$d nearby stations</string>
+    <string name="layer_electrico">EV charging</string>
+    <string name="layer_electrico_desc">Electric vehicle charging points nearby</string>
+    <string name="layer_bici">Bikes</string>
+    <string name="layer_bici_desc">Public bicycle rental points</string>
+    <string name="layer_bus">Bus</string>
+    <string name="layer_bus_desc">Nearby bus stops and routes</string>
+    <string name="layer_tren">Train / Metro</string>
+    <string name="layer_tren_desc">Nearby train and metro stations</string>
+    <string name="layer_peatonal">Walking</string>
+    <string name="layer_peatonal_desc">Optimised walking routes</string>
+    <string name="layer_proximamente">Coming soon</string>
+    <string name="layer_en_desarrollo">In development</string>
+    <string name="layer_avisar">🔔 Notify me when ready</string>
+    <string name="layer_ver_roadmap">See what we\'re building →</string>
+    <string name="layer_avisado">✓ We\'ll notify you when it arrives</string>
 </resources>
