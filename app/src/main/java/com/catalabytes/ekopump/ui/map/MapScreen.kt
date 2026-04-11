@@ -23,10 +23,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.catalabytes.ekopump.data.ev.ChargePoint
+import com.catalabytes.ekopump.data.ev.OpenChargeMapRepository
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
+import com.catalabytes.ekopump.domain.model.EnergyType
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.maplibre.android.MapLibre
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
@@ -49,6 +54,7 @@ fun MapScreen(
     userLat: Double,
     userLon: Double,
     locationDisponible: Boolean = false,
+    energyType: EnergyType? = null,
     onGasolineraClick: (GasolineraConDistancia) -> Unit = {}
 ) {
     val context = LocalContext.current
@@ -57,6 +63,57 @@ fun MapScreen(
     var mapInstance by remember { mutableStateOf<MapLibreMap?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
+
+    // Carga puntos de carga EV cuando el usuario activa EnergyType.EV
+    var chargePoints by remember { mutableStateOf<List<ChargePoint>>(emptyList()) }
+    LaunchedEffect(energyType, userLat, userLon) {
+        if (energyType == EnergyType.EV && userLat != 0.0 && userLon != 0.0) {
+            chargePoints = withContext(Dispatchers.IO) {
+                OpenChargeMapRepository.fetchCercanos(userLat, userLon)
+            }
+        } else {
+            chargePoints = emptyList()
+        }
+    }
+
+    // Actualiza capa EV en el mapa cuando cambian los puntos
+    LaunchedEffect(chargePoints, mapInstance) {
+        val map = mapInstance ?: return@LaunchedEffect
+        map.getStyle { style ->
+            // Limpiar capa anterior si existe
+            style.removeLayer("ev-layer")
+            style.removeSource("ev-source")
+
+            if (chargePoints.isEmpty()) return@getStyle
+
+            chargePoints.forEach { cp ->
+                style.addImage("ev-${cp.id}", crearMarcadorElectrico(cp.conectores))
+            }
+            val evFeatures = chargePoints.map { cp ->
+                org.maplibre.geojson.Feature.fromGeometry(
+                    org.maplibre.geojson.Point.fromLngLat(cp.lon, cp.lat)
+                ).apply { addStringProperty("ev_id", cp.id) }
+            }
+            val evSource = GeoJsonSource(
+                "ev-source",
+                org.maplibre.geojson.FeatureCollection.fromFeatures(evFeatures)
+            )
+            style.addSource(evSource)
+            val evLayer = SymbolLayer("ev-layer", "ev-source").apply {
+                setProperties(
+                    iconImage(org.maplibre.android.style.expressions.Expression.concat(
+                        org.maplibre.android.style.expressions.Expression.literal("ev-"),
+                        org.maplibre.android.style.expressions.Expression.toString(
+                            org.maplibre.android.style.expressions.Expression.get("ev_id")
+                        )
+                    )),
+                    iconAllowOverlap(true),
+                    iconSize(1.0f)
+                )
+            }
+            style.addLayer(evLayer)
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
         AndroidView(
@@ -263,6 +320,35 @@ private fun crearMarcadorConPrecio(precio: String, esBarata: Boolean): Bitmap {
     canvas.drawPath(path, paintPunta)
     canvas.drawText("⛽", w / 2f, 26f, paintIcono)
     canvas.drawText(precio, w / 2f, 58f, paintPrecio)
+
+    return bitmap
+}
+
+private fun crearMarcadorElectrico(conectores: Int): Bitmap {
+    val size = 100
+    val radio = size / 2f
+    val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+
+    val paintFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#FFD600")
+        style = Paint.Style.FILL
+    }
+    val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#1A237E")
+        style = Paint.Style.STROKE
+        strokeWidth = 4f
+    }
+    val paintIcono = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = Color.parseColor("#1A237E")
+        textSize = 38f
+        textAlign = Paint.Align.CENTER
+    }
+
+    canvas.drawCircle(radio, radio, radio - 4f, paintFondo)
+    canvas.drawCircle(radio, radio, radio - 4f, paintBorde)
+    val textY = radio - (paintIcono.descent() + paintIcono.ascent()) / 2f
+    canvas.drawText("⚡", radio, textY, paintIcono)
 
     return bitmap
 }

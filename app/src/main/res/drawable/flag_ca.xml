@@ -1,0 +1,11 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp" android:height="12dp"
+    android:viewportWidth="900" android:viewportHeight="600">
+  <!-- Fondo dorado -->
+  <path android:fillColor="#FCDD09" android:pathData="M0,0 H900 V600 H0 Z"/>
+  <!-- 4 franjas rojas (9 bandas iguales: 5 doradas + 4 rojas) -->
+  <path android:fillColor="#DA121A" android:pathData="M0,66.7 H900 V133.3 H0 Z"/>
+  <path android:fillColor="#DA121A" android:pathData="M0,200 H900 V266.7 H0 Z"/>
+  <path android:fillColor="#DA121A" android:pathData="M0,333.3 H900 V400 H0 Z"/>
+  <path android:fillColor="#DA121A" android:pathData="M0,466.7 H900 V533.3 H0 Z"/>
+</vector>

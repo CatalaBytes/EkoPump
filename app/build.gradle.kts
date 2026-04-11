@@ -23,8 +23,8 @@ android {
         applicationId = "com.catalabytes.ekopump"
         minSdk = 26                  // Android 8.0+ → ~95% dispositivos activos
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.4.0"
+        versionCode = 10
+        versionName = "1.5.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -147,6 +147,9 @@ dependencies {
 
     // ── Google Play Billing ───────────────────────────────────────────────
     implementation(libs.billing)
+
+    // ── In-App Updates ────────────────────────────────────────────────────
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 
     // ── IA: ML Kit ────────────────────────────────────────────────────────
     implementation(libs.mlkit.translate)

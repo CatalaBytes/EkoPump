@@ -132,4 +132,6 @@ Vehicle</string>
     <string name="hist_borrar_titulo">Delete refuel?</string>
     <string name="hist_borrar_desc">This action cannot be undone.</string>
     <string name="hist_borrar_confirmar">Delete</string>
+    <string name="widget_description">Cheapest nearby fuel price</string>
+    <string name="idioma_reiniciando">Applying language…</string>
 </resources>

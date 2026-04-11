@@ -132,4 +132,6 @@ Elektrikoa</string>
     <string name="hist_borrar_titulo">Botaketa ezabatu?</string>
     <string name="hist_borrar_desc">Ekintza hau ezin da desegin.</string>
     <string name="hist_borrar_confirmar">Ezabatu</string>
+    <string name="widget_description">Hurbileko gasolina merkeenaren prezioa</string>
+    <string name="idioma_reiniciando">Hizkuntza aplikatzen…</string>
 </resources>

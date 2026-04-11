@@ -133,4 +133,5 @@ Eléctrico</string>
     <string name="hist_borrar_titulo">¿Borrar repostaje?</string>
     <string name="hist_borrar_desc">Esta acción no se puede deshacer.</string>
     <string name="hist_borrar_confirmar">Borrar</string>
+    <string name="idioma_reiniciando">Aplicando idioma…</string>
 </resources>

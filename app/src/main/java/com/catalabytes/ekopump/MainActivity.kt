@@ -88,6 +88,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        InAppUpdateManager.checkAndPrompt(this)
         setContent { EkoPumpTheme { EkoPumpApp() } }
     }
 }
@@ -134,8 +135,9 @@ fun GasolinerasScreen(
     LaunchedEffect(modoTransportista) { if (!modoTransportista) bannerTransportistaDismissed = false }
 
     LaunchedEffect(uiState) { isRefreshing = false }
-    val userLat by viewModel.userLat.collectAsState()
-    val userLon by viewModel.userLon.collectAsState()
+    val userLat    by viewModel.userLat.collectAsState()
+    val userLon    by viewModel.userLon.collectAsState()
+    val energyType by viewModel.energyType.collectAsState()
 
     val permisosLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -370,6 +372,7 @@ fun GasolinerasScreen(
                         userLat            = userLat,
                         userLon            = userLon,
                         locationDisponible = gpsDisponible,
+                        energyType         = energyType,
                         onGasolineraClick  = { gasolineraMapaSeleccionada = it }
                     )
                     is UiState.Loading -> CircularProgressIndicator(

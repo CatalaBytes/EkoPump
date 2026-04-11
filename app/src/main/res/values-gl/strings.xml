@@ -132,4 +132,6 @@ Eléctrico</string>
     <string name="hist_borrar_titulo">Borrar repostaxe?</string>
     <string name="hist_borrar_desc">Esta acción non se pode desfacer.</string>
     <string name="hist_borrar_confirmar">Borrar</string>
+    <string name="widget_description">Prezo gasolina máis barata preto de ti</string>
+    <string name="idioma_reiniciando">Aplicando idioma…</string>
 </resources>

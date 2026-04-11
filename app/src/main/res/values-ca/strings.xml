@@ -132,4 +132,6 @@ Elèctric</string>
     <string name="hist_borrar_titulo">Voleu eliminar el repostatge?</string>
     <string name="hist_borrar_desc">Aquesta acció no es pot desfer.</string>
     <string name="hist_borrar_confirmar">Eliminar</string>
+    <string name="widget_description">Preu gasolina més barata prop teu</string>
+    <string name="idioma_reiniciando">Aplicant idioma…</string>
 </resources>

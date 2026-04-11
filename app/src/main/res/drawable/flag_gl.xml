@@ -1,0 +1,8 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp" android:height="12dp"
+    android:viewportWidth="180" android:viewportHeight="120">
+  <!-- Fondo blanco -->
+  <path android:fillColor="#FFFFFF" android:pathData="M0,0 H180 V120 H0 Z"/>
+  <!-- Banda azul diagonal de arriba-izquierda a abajo-derecha -->
+  <path android:fillColor="#003DA5" android:pathData="M0,30 L60,0 L120,0 L180,90 L180,120 L120,120 L60,120 L0,90 Z"/>
+</vector>

@@ -180,5 +180,12 @@ class GasolinerasViewModel @Inject constructor(
     }
     fun setEnergyType(tipo: EnergyType?) {
         viewModelScope.launch { calculadorPrefs.setEnergyType(tipo?.name) }
+        when (tipo) {
+            EnergyType.GNC    -> setCombustible(Combustible.GNC)
+            EnergyType.GNL    -> setCombustible(Combustible.GNL)
+            EnergyType.ADBLUE -> { /* AdBlue no filtra lista */ }
+            EnergyType.EV     -> { /* EV: próximamente OpenChargeMap */ }
+            null              -> { /* sin energía alternativa, mantener combustible actual */ }
+        }
     }
 }

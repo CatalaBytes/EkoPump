@@ -2,6 +2,8 @@ package com.catalabytes.ekopump.data.prefs
 
 import android.content.Context
 import android.content.res.Configuration
+import androidx.annotation.DrawableRes
+import com.catalabytes.ekopump.R
 import java.util.Locale
 
 object LocaleHelper {
@@ -18,14 +20,15 @@ object LocaleHelper {
 data class Idioma(
     val codigo: String,
     val nombre: String,
-    val bandera: String
+    val bandera: String,
+    @DrawableRes val banderaRes: Int? = null
 )
 
 val IDIOMAS = listOf(
-    Idioma("system", "Auto", "🌐"),
-    Idioma("es", "Español", "🇪🇸"),
-    Idioma("ca", "Català", "🟨🟥"),
-    Idioma("eu", "Euskera", "🟩🟥"),
-    Idioma("gl", "Galego", "🇪🇸"),
-    Idioma("en", "English", "🇬🇧")
+    Idioma("system", "Auto",    "\uD83C\uDF10"),
+    Idioma("es",     "Español", "\uD83C\uDDEA\uD83C\uDDF8"),
+    Idioma("ca",     "Català",  "",  R.drawable.flag_ca),
+    Idioma("eu",     "Euskera", "",  R.drawable.flag_eu),
+    Idioma("gl",     "Galego",  "",  R.drawable.flag_gl),
+    Idioma("en",     "English", "\uD83C\uDDEC\uD83C\uDDE7")
 )
