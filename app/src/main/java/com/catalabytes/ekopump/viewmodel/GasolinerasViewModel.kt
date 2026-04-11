@@ -1,8 +1,13 @@
 package com.catalabytes.ekopump.viewmodel
 
+import android.appwidget.AppWidgetManager
+import android.content.Context
+import android.content.Intent
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.catalabytes.ekopump.data.location.LocationProvider
+import com.catalabytes.ekopump.widget.EkoPumpWidget
+import dagger.hilt.android.qualifiers.ApplicationContext
 import com.catalabytes.ekopump.data.prefs.CalculadorPrefs
 import com.catalabytes.ekopump.data.prefs.PriceAlertPrefs
 import com.catalabytes.ekopump.data.prefs.PriceHistoryPrefs
@@ -28,6 +33,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GasolinerasViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val repository: GasolinerasRepository,
     private val locationProvider: LocationProvider,
     private val calculadorPrefs: CalculadorPrefs,
@@ -123,6 +129,7 @@ class GasolinerasViewModel @Inject constructor(
                 _lastRefreshMs.value = System.currentTimeMillis()
                 calcularTendencias(data)
                 priceAlertChecker.checkAlerts(data)
+                actualizarWidgetPrefs(data)
             } catch (e: Exception) {
                 _uiState.value = UiState.Error(e.message ?: "Error desconocido")
             }
@@ -170,6 +177,22 @@ class GasolinerasViewModel @Inject constructor(
         }
         _tendencias.value = nuevasTendencias
         priceHistoryPrefs.guardar(preciosActuales)
+    }
+
+    private fun actualizarWidgetPrefs(data: List<GasolineraConDistancia>) {
+        val mejor = data.firstOrNull() ?: return
+        val precio = _combustible.value.precio(mejor.gasolinera)
+        appContext.getSharedPreferences("ekopump_widget", Context.MODE_PRIVATE).edit()
+            .putString("cheapest_price", precio?.let { "%.3f".format(it) } ?: "---")
+            .putString("cheapest_station", mejor.gasolinera.nombre)
+            .putString("cheapest_distance", mejor.distanciaKm?.let { "%.1f".format(it) } ?: "")
+            .putString("last_updated", "hace 0 min")
+            .apply()
+        appContext.sendBroadcast(
+            Intent(appContext, EkoPumpWidget::class.java).apply {
+                action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+            }
+        )
     }
 
     fun setCombustible(c: Combustible) { _combustible.value = c; cargar() }

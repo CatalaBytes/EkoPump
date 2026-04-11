@@ -42,6 +42,7 @@ import com.catalabytes.ekopump.data.prefs.LocaleHelper
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.ui.common.UiState
+import com.catalabytes.ekopump.ui.home.SmartDecisionCard
 import com.catalabytes.ekopump.ui.history.AddRefuelSheet
 import com.catalabytes.ekopump.ui.map.GasolineraDetailSheet
 import com.catalabytes.ekopump.ui.history.HistoryScreen
@@ -437,16 +438,21 @@ fun GasolinerasScreen(
                             colors = ButtonDefaults.buttonColors(containerColor = EkoGreen40)
                         ) { Text("Reintentar") }
                     }
-                    is UiState.Success -> ListaGasolineras(
-                        lista        = state.data,
-                        combustible  = combustible,
-                        consumo      = viewModel.consumo.collectAsState().value,
-                        litros       = viewModel.litros.collectAsState().value,
-                        tendencias   = viewModel.tendencias.collectAsState().value,
-                        onRepostar   = { historyViewModel.addRefuel(it) },
-                        isRefreshing = isRefreshing,
-                        onRefresh    = { isRefreshing = true; viewModel.cargar() }
-                    )
+                    is UiState.Success -> {
+                        val brentBajando = brentViewModel.brent.collectAsState().value
+                            ?.variacion?.let { it < 0 } ?: false
+                        ListaGasolineras(
+                            lista        = state.data,
+                            combustible  = combustible,
+                            consumo      = viewModel.consumo.collectAsState().value,
+                            litros       = viewModel.litros.collectAsState().value,
+                            tendencias   = viewModel.tendencias.collectAsState().value,
+                            brentBajando = brentBajando,
+                            onRepostar   = { historyViewModel.addRefuel(it) },
+                            isRefreshing = isRefreshing,
+                            onRefresh    = { isRefreshing = true; viewModel.cargar() }
+                        )
+                    }
                 }
             }
         }
@@ -680,16 +686,40 @@ fun ListaGasolineras(
     consumo: Float,
     litros: Float,
     tendencias: Map<String, com.catalabytes.ekopump.domain.model.TendenciaPrecio> = emptyMap(),
+    brentBajando: Boolean = false,
     onRepostar: (RefuelEntity) -> Unit = {},
     isRefreshing: Boolean = false,
     onRefresh: () -> Unit = {}
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh    = onRefresh,
         modifier     = Modifier.fillMaxSize()
     ) {
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
+        // SmartDecisionCard — primera gasolinera de la lista (la más barata)
+        item {
+            val mejorGasolinera = lista.firstOrNull()
+            val precioMejor     = mejorGasolinera?.let { combustible.precio(it.gasolinera) }
+            val precioMasCaro   = lista.lastOrNull()?.let { combustible.precio(it.gasolinera) }
+            val ahorroPotencial = if (precioMejor != null && precioMasCaro != null)
+                ((precioMasCaro - precioMejor) * 40.0).coerceAtLeast(0.0) else null
+            SmartDecisionCard(
+                mejorGasolinera  = mejorGasolinera,
+                precioActual     = precioMejor,
+                precioAhorrado   = ahorroPotencial,
+                brentBajando     = brentBajando,
+                combustibleLabel = stringResource(combustible.labelRes),
+                onNavigate = {
+                    mejorGasolinera?.gasolinera?.let { g ->
+                        com.catalabytes.ekopump.ui.navigation.navegarAGasolinera(
+                            context, g.latitud, g.longitud, g.nombre
+                        )
+                    }
+                }
+            )
+        }
         item {
             Text(
                 androidx.compose.ui.res.stringResource(com.catalabytes.ekopump.R.string.gasolineras_cercanas, lista.size),

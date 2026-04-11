@@ -47,12 +47,20 @@ class EkoPumpWidget : AppWidgetProvider() {
             val distance = prefs.getString("cheapest_distance", "") ?: ""
             val saving = prefs.getString("saving_amount", "") ?: ""
             val updated = prefs.getString("last_updated", "Actualizando...") ?: "Actualizando..."
+            val brentDir = prefs.getString("brent_direction", "stable") ?: "stable"
 
-            views.setTextViewText(R.id.widget_price, "$price €/L")
+            val voiceText = when (brentDir) {
+                "down" -> "Brent baja \u00b7 buen momento"
+                "up"   -> "Brent sube \u00b7 considera esperar"
+                else   -> "Tu mejor opci\u00f3n ahora"
+            }
+
+            views.setTextViewText(R.id.widget_price, "$price \u20ac/L")
             views.setTextViewText(R.id.widget_station,
-                if (distance.isNotEmpty()) "$station · $distance km" else station)
+                if (distance.isNotEmpty()) "$station \u00b7 $distance km" else station)
             views.setTextViewText(R.id.widget_saving,
-                if (saving.isNotEmpty()) "Ahorras $saving€ vs tu habitual" else "")
+                if (saving.isNotEmpty()) "Ahorras $saving\u20ac vs tu habitual" else "")
+            views.setTextViewText(R.id.widget_voice, voiceText)
             views.setTextViewText(R.id.widget_updated, "Actualizado $updated")
 
             appWidgetManager.updateAppWidget(widgetId, views)

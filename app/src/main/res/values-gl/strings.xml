@@ -156,4 +156,10 @@ Eléctrico</string>
     <string name="fav_instruccion">Toca o corazón en calquera ficha de gasolineira para gardala</string>
     <string name="fav_guardadas">%1$d gasolineiras gardadas</string>
     <string name="fav_guardadas_0">0 gasolineiras gardadas</string>
+    <string name="smart_mejor_ahora">⚡ MELLOR OPCIÓN AGORA</string>
+    <string name="smart_ahorras_fmt">Aforras %1$s€</string>
+    <string name="smart_voz_buen_momento">O Brent baixa e aquí está o máis barato. Bo momento para repostar.</string>
+    <string name="smart_voz_bajando">Os prezos tenden a baixar. Esta é a túa mellor opción agora.</string>
+    <string name="smart_voz_gran_ahorro">Parar aquí ten moito sentido hoxe. Grande diferenza de prezo.</string>
+    <string name="smart_voz_mejor_opcion">Esta é a mellor opción no teu radio agora mesmo.</string>
 </resources>

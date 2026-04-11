@@ -1,11 +1,13 @@
 package com.catalabytes.ekopump.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.catalabytes.ekopump.data.brent.BrentHistorial
 import com.catalabytes.ekopump.data.brent.BrentPrice
 import com.catalabytes.ekopump.data.brent.BrentRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,6 +17,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class BrentViewModel @Inject constructor(
+    @ApplicationContext private val appContext: Context,
     private val repository: BrentRepository
 ) : ViewModel() {
 
@@ -43,6 +46,13 @@ class BrentViewModel @Inject constructor(
             if (precio != null) {
                 _brent.value = precio
                 _lastRefreshMs.value = System.currentTimeMillis()
+                val dir = when {
+                    precio.variacion < 0 -> "down"
+                    precio.variacion > 0 -> "up"
+                    else                 -> "stable"
+                }
+                appContext.getSharedPreferences("ekopump_widget", Context.MODE_PRIVATE)
+                    .edit().putString("brent_direction", dir).apply()
             }
         }
         viewModelScope.launch {

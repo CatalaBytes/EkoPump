@@ -156,4 +156,10 @@ Elektrikoa</string>
     <string name="fav_instruccion">Sakatu bihotza edozein gasolindegiaren fitxan gordetzeko</string>
     <string name="fav_guardadas">%1$d gasolindegia gordeta</string>
     <string name="fav_guardadas_0">0 gasolindegia gordeta</string>
+    <string name="smart_mejor_ahora">⚡ AUKERA ONENA ORAIN</string>
+    <string name="smart_ahorras_fmt">Aurrezten duzu %1$s€</string>
+    <string name="smart_voz_buen_momento">Brent jaisten ari da eta hau da merkeen. Une ona erregaitzeko.</string>
+    <string name="smart_voz_bajando">Prezioak jaisten ari dira. Hau da zure aukera onena orain.</string>
+    <string name="smart_voz_gran_ahorro">Hemen gelditzea zentzuzkoa da gaur. Prezio desberdintasun handia.</string>
+    <string name="smart_voz_mejor_opcion">Hau da zure erradioaren aukera onena orain bertan.</string>
 </resources>

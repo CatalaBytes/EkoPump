@@ -156,4 +156,10 @@ Vehicle</string>
     <string name="fav_instruccion">Tap the heart on any fuel station card to save it</string>
     <string name="fav_guardadas">%1$d stations saved</string>
     <string name="fav_guardadas_0">0 stations saved</string>
+    <string name="smart_mejor_ahora">⚡ BEST OPTION NOW</string>
+    <string name="smart_ahorras_fmt">You save %1$s€</string>
+    <string name="smart_voz_buen_momento">Brent is falling and this is the cheapest. Good time to fill up.</string>
+    <string name="smart_voz_bajando">Prices are trending down. This is your best option now.</string>
+    <string name="smart_voz_gran_ahorro">Stopping here makes a lot of sense today. Big price difference.</string>
+    <string name="smart_voz_mejor_opcion">This is the best option in your area right now.</string>
 </resources>
