@@ -21,6 +21,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.catalabytes.ekopump.data.local.entity.RefuelEntity
+import com.catalabytes.ekopump.R
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberColumnCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
@@ -29,6 +30,7 @@ import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.columnSeries
 import com.patrykandpatrick.vico.core.cartesian.layer.ColumnCartesianLayer
 import com.patrykandpatrick.vico.core.common.Fill
+import androidx.compose.ui.res.stringResource
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -78,7 +80,7 @@ fun HistoryScreen(
             ) {
                 Icon(
                     imageVector = Icons.Default.LocalGasStation,
-                    contentDescription = "Registrar repostaje",
+                    contentDescription = stringResource(R.string.registrar_repostaje),
                     tint = Color.Black
                 )
             }
@@ -94,7 +96,7 @@ fun HistoryScreen(
         ) {
             item {
                 Text(
-                    text = "⛽ Historial",
+                    text = stringResource(R.string.hist_titulo),
                     style = MaterialTheme.typography.headlineSmall,
                     color = EkoGreen,
                     fontWeight = FontWeight.Bold
@@ -112,7 +114,7 @@ fun HistoryScreen(
                 ) {
                     Column(modifier = Modifier.padding(14.dp)) {
                         Text(
-                            "📅 Resumen de $mesActual",
+                            stringResource(R.string.hist_resumen_mes_fmt, mesActual),
                             color = EkoGreen,
                             fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.titleSmall
@@ -122,8 +124,8 @@ fun HistoryScreen(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            MesStatItem(Modifier.weight(1f), "💶 Gastado", "${"%.2f".format(totalGastadoMes ?: 0.0)} €")
-                            MesStatItem(Modifier.weight(1f), "🛢 Litros", "${"%.1f".format(totalLitrosMes ?: 0.0)} L")
+                            MesStatItem(Modifier.weight(1f), stringResource(R.string.hist_gastado), "${"%.2f".format(totalGastadoMes ?: 0.0)} €")
+                            MesStatItem(Modifier.weight(1f), stringResource(R.string.hist_litros_label), "${"%.1f".format(totalLitrosMes ?: 0.0)} L")
                         }
                         Spacer(Modifier.height(6.dp))
                         Row(
@@ -132,12 +134,12 @@ fun HistoryScreen(
                         ) {
                             MesStatItem(
                                 Modifier.weight(1f),
-                                "⚡ Consumo real",
+                                stringResource(R.string.hist_consumo_real),
                                 if (avgConsumoMes != null) "${"%.1f".format(avgConsumoMes)} L/100" else "—"
                             )
                             MesStatItem(
                                 Modifier.weight(1f),
-                                "💚 Ahorro",
+                                stringResource(R.string.hist_ahorro),
                                 if (totalAhorroMes != null) "${"%.2f".format(totalAhorroMes)} €" else "—",
                                 highlight = true
                             )
@@ -147,7 +149,7 @@ fun HistoryScreen(
                         if (ultimos10.isNotEmpty()) {
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                "Gasto por repostaje (últimos ${ultimos10.size})",
+                                stringResource(R.string.hist_gasto_repostaje_ultimos, ultimos10.size),
                                 color = Color.Gray,
                                 style = MaterialTheme.typography.labelSmall
                             )
@@ -195,7 +197,7 @@ fun HistoryScreen(
                         ) {
                             Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("Compartir resumen del mes")
+                            Text(stringResource(R.string.compartir_resumen))
                         }
                     }
                 }
@@ -209,9 +211,9 @@ fun HistoryScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    StatCard(Modifier.weight(1f), "Repostajes", "$refuelCount")
-                    StatCard(Modifier.weight(1f), "Litros", "${"%.1f".format(totalLiters ?: 0.0)} L")
-                    StatCard(Modifier.weight(1f), "Ahorrado", "${"%.2f".format(totalSaved ?: 0.0)} €", highlight = true)
+                    StatCard(Modifier.weight(1f), stringResource(R.string.hist_repostajes_stat), "$refuelCount")
+                    StatCard(Modifier.weight(1f), stringResource(R.string.hist_litros_stat), "${"%.1f".format(totalLiters ?: 0.0)} L")
+                    StatCard(Modifier.weight(1f), stringResource(R.string.hist_ahorrado_stat), "${"%.2f".format(totalSaved ?: 0.0)} €", highlight = true)
                 }
             }
 
@@ -225,7 +227,7 @@ fun HistoryScreen(
                         modifier = Modifier.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("💶 Total gastado:", color = Color.White, modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.hist_total_gastado), color = Color.White, modifier = Modifier.weight(1f))
                         Text(
                             "${"%.2f".format(totalSpent ?: 0.0)} €",
                             color = EkoGreen,
@@ -326,21 +328,21 @@ private fun RefuelCard(refuel: RefuelEntity, onDelete: () -> Unit) {
                 }
                 if (refuel.consumoRealL100 != null) {
                     Text(
-                        "⚡ Consumo real: ${"%.1f".format(refuel.consumoRealL100)} L/100km",
+                        stringResource(R.string.hist_consumo_real_fmt, refuel.consumoRealL100!!),
                         color = Color.Gray,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
                 if (refuel.savedAmount > 0) {
                     Text(
-                        "💚 Ahorraste ${"%.2f".format(refuel.savedAmount)} €",
+                        stringResource(R.string.hist_ahorraste_fmt, refuel.savedAmount),
                         color = EkoGreen,
                         style = MaterialTheme.typography.labelSmall
                     )
                 }
             }
             IconButton(onClick = { showConfirm = true }) {
-                Icon(Icons.Default.Delete, contentDescription = "Borrar", tint = Color.Gray)
+                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.hist_borrar_confirmar), tint = Color.Gray)
             }
         }
     }
@@ -348,15 +350,15 @@ private fun RefuelCard(refuel: RefuelEntity, onDelete: () -> Unit) {
     if (showConfirm) {
         AlertDialog(
             onDismissRequest = { showConfirm = false },
-            title   = { Text("¿Borrar repostaje?") },
-            text    = { Text("Esta acción no se puede deshacer.") },
+            title   = { Text(stringResource(R.string.hist_borrar_titulo)) },
+            text    = { Text(stringResource(R.string.hist_borrar_desc)) },
             confirmButton = {
                 TextButton(onClick = { onDelete(); showConfirm = false }) {
-                    Text("Borrar", color = Color.Red)
+                    Text(stringResource(R.string.hist_borrar_confirmar), color = Color.Red)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showConfirm = false }) { Text("Cancelar") }
+                TextButton(onClick = { showConfirm = false }) { Text(stringResource(R.string.cerrar)) }
             }
         )
     }
@@ -368,9 +370,9 @@ private fun EmptyHistory() {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text("⛽", style = MaterialTheme.typography.displayLarge)
             Spacer(Modifier.height(8.dp))
-            Text("Aún no has registrado repostajes", color = Color.Gray)
+            Text(stringResource(R.string.hist_sin_datos), color = Color.Gray)
             Text(
-                "Pulsa el botón + para añadir el primero",
+                stringResource(R.string.hist_sin_datos_hint),
                 color = Color.Gray,
                 style = MaterialTheme.typography.bodySmall
             )

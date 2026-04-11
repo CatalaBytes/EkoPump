@@ -16,6 +16,13 @@ class RefuelRepository @Inject constructor(
     val totalLiters: Flow<Double?> = dao.getTotalLiters()
     val refuelCount: Flow<Int> = dao.getRefuelCount()
 
+    fun getRefuelsSince(startMs: Long): Flow<List<RefuelEntity>>   = dao.getRefuelsSince(startMs)
+    fun getTotalSpentSince(startMs: Long): Flow<Double?>           = dao.getTotalSpentSince(startMs)
+    fun getTotalLitersSince(startMs: Long): Flow<Double?>          = dao.getTotalLitersSince(startMs)
+    fun getAvgConsumoRealSince(startMs: Long): Flow<Float?>        = dao.getAvgConsumoRealSince(startMs)
+    fun getTotalAhorroSince(startMs: Long): Flow<Float?>           = dao.getTotalAhorroSince(startMs)
+    suspend fun getLastRefuel(): RefuelEntity?                     = dao.getLastRefuel()
+
     suspend fun addRefuel(refuel: RefuelEntity) = dao.insert(refuel)
     suspend fun deleteRefuel(refuel: RefuelEntity) = dao.delete(refuel)
 }

@@ -3,6 +3,7 @@ package com.catalabytes.ekopump.data.prefs
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.floatPreferencesKey
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.preferencesDataStore
@@ -24,6 +25,7 @@ class CalculadorPrefs @Inject constructor(
         val KEY_VEHICLE_TYPE        = stringPreferencesKey("vehicle_type")
         val KEY_ENERGY_TYPE         = stringPreferencesKey("energy_type")
         val KEY_MODO_TRANSPORTISTA  = booleanPreferencesKey("modo_transportista")
+        val KEY_UMBRAL_AUTONOMIA    = intPreferencesKey("umbral_autonomia_km")
     }
 
     val consumo: Flow<Float> = context.calculadorDataStore.data.map {
@@ -46,6 +48,10 @@ class CalculadorPrefs @Inject constructor(
         it[KEY_MODO_TRANSPORTISTA] ?: false
     }
 
+    val umbralAutonomiaKm: Flow<Int> = context.calculadorDataStore.data.map {
+        it[KEY_UMBRAL_AUTONOMIA] ?: 80
+    }
+
     suspend fun setConsumo(v: Float) {
         context.calculadorDataStore.edit { it[KEY_CONSUMO] = v }
     }
@@ -66,5 +72,9 @@ class CalculadorPrefs @Inject constructor(
 
     suspend fun setModoTransportista(v: Boolean) {
         context.calculadorDataStore.edit { it[KEY_MODO_TRANSPORTISTA] = v }
+    }
+
+    suspend fun setUmbralAutonomia(km: Int) {
+        context.calculadorDataStore.edit { it[KEY_UMBRAL_AUTONOMIA] = km }
     }
 }

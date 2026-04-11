@@ -23,7 +23,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.Dialog
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.domain.model.VehicleType
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.viewmodel.GasolinerasViewModel
@@ -63,7 +65,7 @@ fun CalculadorDialog(
                         fontSize = 20.sp, color = Color.White)
                 }
 
-                Text("¿Qué conduces?", fontSize = 13.sp,
+                Text(stringResource(R.string.calc_que_conduces), fontSize = 13.sp,
                     color = EkoGrayText, fontWeight = FontWeight.Medium)
 
                 Row(
@@ -94,10 +96,10 @@ fun CalculadorDialog(
                             modifier = Modifier.padding(16.dp).fillMaxWidth(),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            Text("⚡ Próximamente", color = Color(0xFF00C853),
+                            Text(stringResource(R.string.calc_proximamente), color = Color(0xFF00C853),
                                 fontWeight = FontWeight.Bold, fontSize = 18.sp)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text("Soporte para eléctricos en la próxima versión.",
+                            Text(stringResource(R.string.calc_electrico_pronto),
                                 color = Color.Gray,
                                 fontSize = 13.sp,
                                 textAlign = TextAlign.Center)
@@ -105,7 +107,7 @@ fun CalculadorDialog(
                     }
                 } else {
                     FuturisticSliderSection(
-                        title         = "Consumo",
+                        title         = stringResource(R.string.calc_consumo),
                         value         = consumo,
                         min           = vehicleType.consumoMin,
                         max           = vehicleType.consumoMax,
@@ -116,7 +118,7 @@ fun CalculadorDialog(
                     )
 
                     FuturisticSliderSection(
-                        title         = "Litros a repostar",
+                        title         = stringResource(R.string.calc_litros),
                         value         = litros,
                         min           = vehicleType.litrosMin,
                         max           = vehicleType.litrosMax,
@@ -136,7 +138,7 @@ fun CalculadorDialog(
                         contentColor   = EkoDarkBg
                     )
                 ) {
-                    Text("Listo ✓", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                    Text(stringResource(R.string.calc_listo), fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
                 }
             }
         }
@@ -180,7 +182,7 @@ private fun VehicleCard(
             Text(tipo.emoji, fontSize = 22.sp)
             Spacer(Modifier.height(2.dp))
             Text(
-                tipo.labelEs,
+                stringResource(tipo.labelRes),
                 fontSize = 10.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = if (selected) EkoGreenNeon else EkoGrayText,

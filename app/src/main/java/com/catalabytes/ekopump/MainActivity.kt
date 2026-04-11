@@ -33,8 +33,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.data.local.entity.RefuelEntity
 import com.catalabytes.ekopump.data.prefs.LocaleHelper
 import com.catalabytes.ekopump.data.repository.Combustible
@@ -203,12 +205,7 @@ fun GasolinerasScreen(
         return
     }
 
-    val tabs = listOf(
-        Triple("Lista",     Icons.Default.List,     0),
-        Triple("Mapa",      Icons.Default.Map,      1),
-        Triple("Historial", Icons.Default.Settings, 2),
-        Triple("Perfil",    Icons.Default.Settings, 3)
-    )
+
 
     Scaffold(
         topBar = {
@@ -250,7 +247,7 @@ fun GasolinerasScreen(
                             FilterChip(
                                 selected = combustible == c,
                                 onClick  = { viewModel.setCombustible(c) },
-                                label    = { Text(c.label, fontSize = 13.sp) },
+                                label    = { Text(stringResource(c.labelRes), fontSize = 13.sp) },
                                 colors   = FilterChipDefaults.filterChipColors(
                                     selectedContainerColor = Color.White,
                                     selectedLabelColor     = EkoGreen40
@@ -268,7 +265,7 @@ fun GasolinerasScreen(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        "📍 Radio: ${radioKm.toInt()} km",
+                        stringResource(R.string.radio_label, radioKm.toInt()),
                         color = Color.White,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
@@ -288,13 +285,11 @@ fun GasolinerasScreen(
                 }
                 // ── Timestamp última actualización ───────────────────────
                 if (lastRefreshMs > 0L) {
-                    val ahoraMs = System.currentTimeMillis()
-                    val diffMin = ((ahoraMs - lastRefreshMs) / 60_000L).toInt()
-                    val textoActualizado = when {
-                        diffMin < 1  -> "Actualizado: ahora mismo"
-                        diffMin == 1 -> "Actualizado: hace 1 min"
-                        else         -> "Actualizado: hace $diffMin min"
-                    }
+                    val diffMin = ((System.currentTimeMillis() - lastRefreshMs) / 60_000L).toInt()
+                    val textoActualizado = if (diffMin < 1)
+                        stringResource(R.string.actualizado_ahora)
+                    else
+                        stringResource(R.string.actualizado_hace_min, diffMin)
                     Text(
                         text = textoActualizado,
                         color = Color(0xFF4CAF50),
@@ -315,7 +310,7 @@ fun GasolinerasScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            "🚛 Modo Transportista · Gasóleo A · Radio 25 km",
+                            stringResource(R.string.modo_transportista_banner),
                             fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color(0xFFFFD54F),
@@ -327,7 +322,7 @@ fun GasolinerasScreen(
                         ) {
                             Icon(
                                 Icons.Default.Close,
-                                contentDescription = "Cerrar",
+                                contentDescription = stringResource(R.string.cerrar),
                                 tint = Color(0xFFFFD54F),
                                 modifier = Modifier.size(16.dp)
                             )
@@ -342,11 +337,11 @@ fun GasolinerasScreen(
                 tonalElevation = 0.dp
             ) {
                 val navItems = listOf(
-                    Triple(Icons.Default.List,     "Lista",     0),
-                    Triple(Icons.Default.Map,      "Mapa",      1),
-                    Triple(Icons.Default.History,  "Historial", 2),
-                    Triple(Icons.Default.Favorite, "Favoritas", 3),
-                    Triple(Icons.Default.Settings, "Perfil",    4)
+                    Triple(Icons.Default.List,     stringResource(R.string.nav_lista),     0),
+                    Triple(Icons.Default.Map,      stringResource(R.string.nav_mapa),      1),
+                    Triple(Icons.Default.History,  stringResource(R.string.nav_historial), 2),
+                    Triple(Icons.Default.Favorite, stringResource(R.string.nav_favoritas), 3),
+                    Triple(Icons.Default.Settings, stringResource(R.string.nav_perfil),    4)
                 )
                 navItems.forEach { (icon, label, idx) ->
                     NavigationBarItem(
@@ -476,13 +471,13 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "🚛 Modo Transportista",
+                        stringResource(R.string.modo_transportista_label),
                         fontWeight = FontWeight.Bold,
                         fontSize = 15.sp,
                         color = if (modoTransportista) Color(0xFFFFD54F) else Color.White
                     )
                     Text(
-                        "Gasóleo A · Radio 25 km · Consumo 30 L/100km",
+                        stringResource(R.string.modo_transportista_desc),
                         fontSize = 12.sp,
                         color = grayText
                     )
@@ -500,9 +495,9 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             }
         }
 
-        Text("🚗 Mi vehículo", fontWeight = FontWeight.ExtraBold,
+        Text(stringResource(R.string.perfil_mi_vehiculo), fontWeight = FontWeight.ExtraBold,
             fontSize = 24.sp, color = Color.White)
-        Text("¿Qué conduces?", fontSize = 13.sp, color = grayText)
+        Text(stringResource(R.string.perfil_que_conduces), fontSize = 13.sp, color = grayText)
 
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             com.catalabytes.ekopump.domain.model.VehicleType.entries.forEach { tipo ->
@@ -529,7 +524,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                     ) {
                         Text(tipo.emoji, fontSize = 22.sp)
                         Text(
-                            tipo.labelEs, fontSize = 10.sp, fontWeight = FontWeight.SemiBold,
+                            stringResource(tipo.labelRes), fontSize = 10.sp, fontWeight = FontWeight.SemiBold,
                             color = if (sel) verde else grayText,
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                             maxLines = 1,
@@ -542,7 +537,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
 
         // Selector de energía alternativa
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("⚡ Energía alternativa", fontSize = 13.sp, color = grayText)
+            Text(stringResource(R.string.perfil_energia_alternativa), fontSize = 13.sp, color = grayText)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 com.catalabytes.ekopump.domain.model.EnergyType.entries.forEach { tipo ->
                     val sel = energyType == tipo
@@ -568,9 +563,9 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(tipo.emoji, fontSize = 18.sp)
-                            Text(tipo.labelEs, fontSize = 10.sp, fontWeight = FontWeight.Bold,
+                            Text(stringResource(tipo.labelRes), fontSize = 10.sp, fontWeight = FontWeight.Bold,
                                 color = if (sel) accentColor else grayText)
-                            Text(tipo.descripcion, fontSize = 8.sp, color = grayText.copy(alpha = 0.7f),
+                            Text(stringResource(tipo.descripcionRes), fontSize = 8.sp, color = grayText.copy(alpha = 0.7f),
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
                                 lineHeight = 10.sp)
                         }
@@ -579,7 +574,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             }
             if (energyType != null) {
                 Text(
-                    "Toca de nuevo para deseleccionar",
+                    stringResource(R.string.perfil_toca_deseleccionar),
                     fontSize = 10.sp,
                     color = grayText.copy(alpha = 0.5f)
                 )
@@ -593,7 +588,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                Text("Consumo", fontSize = 13.sp, color = grayText)
+                Text(stringResource(R.string.perfil_consumo), fontSize = 13.sp, color = grayText)
                 val esElectrico = vehicleType == com.catalabytes.ekopump.domain.model.VehicleType.ELECTRICO
                 Text(
                     "${"%.1f".format(consumo)} ${if (esElectrico) "kWh/100km" else "L/100km"}",
@@ -630,7 +625,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.CenterVertically) {
-                Text("Litros a repostar", fontSize = 13.sp, color = grayText)
+                Text(stringResource(R.string.perfil_litros_repostar), fontSize = 13.sp, color = grayText)
                 Text("${"%.0f".format(litros)} L", fontSize = 15.sp,
                     fontWeight = FontWeight.ExtraBold, color = verde)
             }
@@ -777,9 +772,9 @@ fun GasolineraItem(
                 }
                 ahorro?.let { a ->
                     val (label, color) = if (a.valeLaPena)
-                        "✅ Ahorras ${"%.2f".format(a.beneficioNeto)}€" to androidx.compose.ui.graphics.Color(0xFF2E7D32)
+                        stringResource(R.string.ahorras_fmt, a.beneficioNeto) to androidx.compose.ui.graphics.Color(0xFF2E7D32)
                     else
-                        "❌ Gastas ${"%.2f".format(-a.beneficioNeto)}€ más" to androidx.compose.ui.graphics.Color(0xFFB71C1C)
+                        stringResource(R.string.gastas_mas_fmt, -a.beneficioNeto) to androidx.compose.ui.graphics.Color(0xFFB71C1C)
                     Text(
                         label,
                         fontSize = 11.sp,

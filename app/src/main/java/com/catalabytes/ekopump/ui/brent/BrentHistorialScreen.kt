@@ -8,12 +8,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.viewmodel.BrentViewModel
@@ -62,7 +64,7 @@ fun BrentHistorialScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                        Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver), tint = Color.White)
                     }
                     Text("🛢 Brent Crude Oil", color = Color.White, fontWeight = FontWeight.ExtraBold, fontSize = 20.sp)
                 }
@@ -87,15 +89,15 @@ fun BrentHistorialScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column {
-                            Text("Precio actual", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("${"%.2f".format(b.precio)} USD/barril", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+                            Text(stringResource(R.string.brent_precio_actual), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text("${"%.2f".format(b.precio)} ${stringResource(R.string.brent_usd_barril)}", fontSize = 22.sp, fontWeight = FontWeight.Bold)
                         }
                         Text("$flecha ${"%.2f".format(b.variacionPct)}%", color = color, fontSize = 18.sp, fontWeight = FontWeight.Bold)
                     }
                 }
             }
 
-            Text("Últimos 30 días", fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
+            Text(stringResource(R.string.brent_ultimos_30_dias), fontWeight = FontWeight.SemiBold, fontSize = 15.sp)
 
             if (historial.isNotEmpty()) {
                 Card(shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
@@ -120,12 +122,12 @@ fun BrentHistorialScreen(
                 val max = historial.maxByOrNull { it.precio }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Mínimo", fontSize = 11.sp, color = Color(0xFF4CAF50))
+                        Text(stringResource(R.string.brent_minimo), fontSize = 11.sp, color = Color(0xFF4CAF50))
                         Text("${"%.2f".format(min?.precio)}$", fontWeight = FontWeight.Bold, color = Color(0xFF4CAF50))
                         Text(min?.fecha ?: "", fontSize = 10.sp)
                     }
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text("Máximo", fontSize = 11.sp, color = Color(0xFFFF6B35))
+                        Text(stringResource(R.string.brent_maximo), fontSize = 11.sp, color = Color(0xFFFF6B35))
                         Text("${"%.2f".format(max?.precio)}$", fontWeight = FontWeight.Bold, color = Color(0xFFFF6B35))
                         Text(max?.fecha ?: "", fontSize = 10.sp)
                     }

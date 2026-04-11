@@ -24,7 +24,7 @@ android {
         minSdk = 26                  // Android 8.0+ → ~95% dispositivos activos
         targetSdk = 35
         versionCode = 9
-        versionName = "1.3.1"
+        versionName = "1.4.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

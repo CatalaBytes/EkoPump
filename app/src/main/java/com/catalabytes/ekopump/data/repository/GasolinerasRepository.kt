@@ -1,6 +1,8 @@
 package com.catalabytes.ekopump.data.repository
 
 import android.location.Location
+import androidx.annotation.StringRes
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.data.api.MineturApiService
 import com.catalabytes.ekopump.data.location.LocationProvider
 import com.catalabytes.ekopump.data.mapper.toDomain
@@ -65,12 +67,16 @@ data class GasolineraConDistancia(
     val esMasCercana: Boolean = false   // ← nuevo flag
 )
 
-enum class Combustible(val label: String, val precio: (Gasolinera) -> Double?) {
-    GASOLINA_95("Gasolina 95", { it.gasolina95 }),
-    GASOLINA_98("Gasolina 98", { it.gasolina98 }),
-    GASOLEO_A("Diésel", { it.gasoleoA }),
-    GASOLEO_PREMIUM("Diésel Premium", { it.gasoleoPremium }),
-    GLP("GLP", { it.glp }),
-    GNC("GNC", { it.gnc }),
-    GNL("GNL", { it.gnl })
+enum class Combustible(
+    val label: String,
+    @get:StringRes val labelRes: Int,
+    val precio: (Gasolinera) -> Double?
+) {
+    GASOLINA_95("Gasolina 95", R.string.combustible_95, { it.gasolina95 }),
+    GASOLINA_98("Gasolina 98", R.string.combustible_98, { it.gasolina98 }),
+    GASOLEO_A("Diésel", R.string.combustible_diesel, { it.gasoleoA }),
+    GASOLEO_PREMIUM("Diésel Premium", R.string.combustible_diesel_premium, { it.gasoleoPremium }),
+    GLP("GLP", R.string.combustible_glp, { it.glp }),
+    GNC("GNC", R.string.combustible_gnc, { it.gnc }),
+    GNL("GNL", R.string.combustible_gnl, { it.gnl })
 }

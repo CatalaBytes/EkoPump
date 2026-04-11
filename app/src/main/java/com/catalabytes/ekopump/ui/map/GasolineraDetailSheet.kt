@@ -19,11 +19,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.domain.model.TendenciaPrecio
@@ -64,12 +66,12 @@ fun GasolineraDetailSheet(
             onDismissRequest = { mostrarDialogAlerta = false },
             containerColor = Color(0xFF1B2E1C),
             title = {
-                Text("🔔 Alerta de precio", color = Color(0xFFF0FDF4), fontWeight = FontWeight.Bold)
+                Text(stringResource(R.string.detail_alerta_titulo), color = Color(0xFFF0FDF4), fontWeight = FontWeight.Bold)
             },
             text = {
                 Column {
                     Text(
-                        "Te avisaremos cuando ${g.nombre} tenga ${combustible.label} por debajo del precio que elijas.",
+                        stringResource(R.string.detail_alerta_desc, g.nombre, stringResource(combustible.labelRes)),
                         fontSize = 14.sp,
                         color = Color(0xFFB0C4B1)
                     )
@@ -77,7 +79,7 @@ fun GasolineraDetailSheet(
                     OutlinedTextField(
                         value = umbralInput,
                         onValueChange = { umbralInput = it },
-                        label = { Text("Precio umbral (€/L)", color = Color(0xFF6B8F72)) },
+                        label = { Text(stringResource(R.string.detail_umbral_label), color = Color(0xFF6B8F72)) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -97,12 +99,12 @@ fun GasolineraDetailSheet(
                         mostrarDialogAlerta = false
                     }
                 }) {
-                    Text("Activar alerta", color = EkoGreenL, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detail_activar_alerta), color = EkoGreenL, fontWeight = FontWeight.Bold)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { mostrarDialogAlerta = false }) {
-                    Text("Cancelar", color = Color(0xFF6B8F72))
+                    Text(stringResource(R.string.cancelar), color = Color(0xFF6B8F72))
                 }
             }
         )
@@ -150,7 +152,7 @@ fun GasolineraDetailSheet(
                     Icon(
                         imageVector = if (esFavorita) Icons.Default.Favorite
                                       else Icons.Default.FavoriteBorder,
-                        contentDescription = "Favorita",
+                        contentDescription = stringResource(R.string.nav_favoritas),
                         tint = if (esFavorita) Color(0xFFE53935) else Color(0xFF6B8F72)
                     )
                 }
@@ -168,9 +170,9 @@ fun GasolineraDetailSheet(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     val (tendenciaSimbolo, tendenciaColor) = when (tendencia) {
-                        TendenciaPrecio.SUBE   -> "↑ Subiendo" to Color(0xFFE53935)
-                        TendenciaPrecio.BAJA   -> "↓ Bajando"  to Color(0xFF43A047)
-                        TendenciaPrecio.ESTABLE -> "→ Estable" to Color(0xFF9E9E9E)
+                        TendenciaPrecio.SUBE   -> stringResource(R.string.detail_tendencia_sube) to Color(0xFFE53935)
+                        TendenciaPrecio.BAJA   -> stringResource(R.string.detail_tendencia_baja)  to Color(0xFF43A047)
+                        TendenciaPrecio.ESTABLE -> stringResource(R.string.detail_tendencia_estable) to Color(0xFF9E9E9E)
                     }
                     Text(
                         text = precioStr,
@@ -186,7 +188,7 @@ fun GasolineraDetailSheet(
                         modifier = Modifier.padding(top = 2.dp)
                     )
                     Text(
-                        text = combustible.label,
+                        text = stringResource(combustible.labelRes),
                         fontSize = 13.sp,
                         color = Color(0xFF6B8F72)
                     )
@@ -284,7 +286,7 @@ fun GasolineraDetailSheet(
                     Icon(Icons.Default.NotificationsOff, contentDescription = null,
                         modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("🔕 Quitar alerta de precio")
+                    Text(stringResource(R.string.detail_quitar_alerta))
                 }
             } else {
                 OutlinedButton(
@@ -301,7 +303,7 @@ fun GasolineraDetailSheet(
                     Icon(Icons.Default.Notifications, contentDescription = null,
                         modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("🔔 Alertarme si baja de ${combustible.label.lowercase()}")
+                    Text(stringResource(R.string.detail_alerta_si_baja, stringResource(combustible.labelRes).lowercase()))
                 }
             }
 
@@ -332,7 +334,7 @@ fun GasolineraDetailSheet(
                         brush = androidx.compose.ui.graphics.SolidColor(EkoGreen)
                     )
                 ) {
-                    Text("🗺️ Navegar")
+                    Text(stringResource(R.string.detail_navegar))
                 }
 
                 // Repostar aquí
@@ -341,7 +343,7 @@ fun GasolineraDetailSheet(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = EkoGreen)
                 ) {
-                    Text("⛽ Repostar", color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.detail_repostar), color = Color.White, fontWeight = FontWeight.Bold)
                 }
             }
         }

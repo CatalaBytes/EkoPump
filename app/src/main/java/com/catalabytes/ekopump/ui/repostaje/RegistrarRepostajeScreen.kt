@@ -12,11 +12,13 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.viewmodel.GuardarResult
 import com.catalabytes.ekopump.viewmodel.RegistrarRepostajeViewModel
@@ -78,10 +80,10 @@ fun RegistrarRepostajeScreen(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onBack) {
-                    Icon(Icons.Default.ArrowBack, contentDescription = "Volver", tint = Color.White)
+                    Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.volver), tint = Color.White)
                 }
                 Text(
-                    "Registrar repostaje",
+                    stringResource(R.string.registrar_repostaje),
                     color = Color.White,
                     fontWeight = FontWeight.ExtraBold,
                     fontSize = 20.sp
@@ -99,7 +101,7 @@ fun RegistrarRepostajeScreen(
         ) {
             if (ultimoOdo > 0) {
                 Text(
-                    "Ultimo odómetro registrado: $ultimoOdo km",
+                    stringResource(R.string.repo_ultimo_odo, ultimoOdo),
                     fontSize = 13.sp,
                     color = Color(0xFF80CBC4)
                 )
@@ -112,8 +114,8 @@ fun RegistrarRepostajeScreen(
                     val filtered = v.filter { it.isDigit() }.take(7)
                     odometroStr = filtered
                 },
-                label = "Odómetro actual (km)",
-                placeholder = "Ej: 45230",
+                label = stringResource(R.string.odometro_actual),
+                placeholder = stringResource(R.string.repo_ej_odometro),
                 keyboardType = KeyboardType.Number
             )
 
@@ -128,8 +130,8 @@ fun RegistrarRepostajeScreen(
                     else sanitized
                     litrosStr = filtered.take(6) // máx "200.00"
                 },
-                label = "Litros repostados",
-                placeholder = "Ej: 40",
+                label = stringResource(R.string.litros_repostados),
+                placeholder = stringResource(R.string.repo_ej_litros),
                 keyboardType = KeyboardType.Decimal
             )
 
@@ -144,8 +146,8 @@ fun RegistrarRepostajeScreen(
                     else sanitized
                     precioStr = filtered.take(5) // máx "5.000"
                 },
-                label = "Precio por litro (€)",
-                placeholder = "Ej: 1.569",
+                label = stringResource(R.string.precio_litro),
+                placeholder = stringResource(R.string.repo_ej_precio),
                 keyboardType = KeyboardType.Decimal
             )
 
@@ -156,8 +158,8 @@ fun RegistrarRepostajeScreen(
                     val filtered = v.filter { it != '<' && it != '>' && it != '&' && it != '"' && it != '\'' }
                     nombreStr = filtered.take(100)
                 },
-                label = "Nombre gasolinera (opcional)",
-                placeholder = "Ej: Repsol Madrid",
+                label = stringResource(R.string.repo_nombre_gasolinera),
+                placeholder = stringResource(R.string.repo_ej_nombre),
                 keyboardType = KeyboardType.Text
             )
 
@@ -190,7 +192,7 @@ fun RegistrarRepostajeScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = EkoGreen40)
             ) {
                 Text(
-                    "Guardar repostaje",
+                    stringResource(R.string.guardar_repostaje),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.White
@@ -211,13 +213,13 @@ fun RegistrarRepostajeScreen(
                         modifier = Modifier.padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(4.dp)
                     ) {
-                        Text("Resumen", fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
-                        Text("Total: ${"%.2f".format(total)} €", color = Color(0xFF69F0AE))
+                        Text(stringResource(R.string.repo_resumen), fontWeight = FontWeight.Bold, color = Color.White, fontSize = 14.sp)
+                        Text(stringResource(R.string.repo_total_fmt, total), color = Color(0xFF69F0AE))
                         if (ultimoOdo > 0 && odoVal > ultimoOdo) {
                             val km = odoVal - ultimoOdo
                             val consumoCalc = (litVal / km.toFloat()) * 100f
-                            Text("Km desde ultimo repostaje: $km km", color = Color.LightGray, fontSize = 13.sp)
-                            Text("Consumo calculado: ${"%.1f".format(consumoCalc)} L/100km", color = Color.LightGray, fontSize = 13.sp)
+                            Text(stringResource(R.string.repo_km_desde_ultimo, km), color = Color.LightGray, fontSize = 13.sp)
+                            Text(stringResource(R.string.repo_consumo_calculado, consumoCalc), color = Color.LightGray, fontSize = 13.sp)
                         }
                     }
                 }

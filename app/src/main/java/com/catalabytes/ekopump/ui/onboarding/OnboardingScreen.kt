@@ -11,10 +11,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 
@@ -25,15 +27,37 @@ data class OnboardingPage(
     val color: Color
 )
 
-val onboardingPages = listOf(
-    OnboardingPage("⛽", "Bienvenido a EkoPump", "Encuentra la gasolina más barata cerca de ti con datos oficiales del Gobierno de España. Actualizado cada hora.", EkoGreen40),
-    OnboardingPage("💶", "Calcula tu ahorro real", "Dinos el consumo de tu coche y cuántos litros quieres repostar. EkoPump calcula exactamente cuánto ahorras en cada gasolinera.", Color(0xFF2E7D32)),
-    OnboardingPage("🛢️", "Sigue el precio del Brent", "El precio del petróleo sube antes de que lo notes en el surtidor. EkoPump te avisa para que repostes en el momento justo.", EkoAmber40),
-    OnboardingPage("🚀", "¡Todo listo!", "EkoPump es gratis, sin anuncios y funciona en español, català, euskera, galego e inglés.", EkoGreen40)
+@Composable
+fun getOnboardingPages(): List<OnboardingPage> = listOf(
+    OnboardingPage(
+        emoji       = "\u26fd",
+        titulo      = stringResource(R.string.onboarding_1_titulo),
+        descripcion = stringResource(R.string.onboarding_1_desc),
+        color       = EkoGreen40
+    ),
+    OnboardingPage(
+        emoji       = "\ud83d\udcb6",
+        titulo      = stringResource(R.string.onboarding_2_titulo),
+        descripcion = stringResource(R.string.onboarding_2_desc),
+        color       = Color(0xFF2E7D32)
+    ),
+    OnboardingPage(
+        emoji       = "\ud83d\udee2\ufe0f",
+        titulo      = stringResource(R.string.onboarding_3_titulo),
+        descripcion = stringResource(R.string.onboarding_3_desc),
+        color       = EkoAmber40
+    ),
+    OnboardingPage(
+        emoji       = "\ud83d\ude80",
+        titulo      = stringResource(R.string.onboarding_4_titulo),
+        descripcion = stringResource(R.string.onboarding_4_desc),
+        color       = EkoGreen40
+    )
 )
 
 @Composable
 fun OnboardingScreen(onFinish: () -> Unit) {
+    val onboardingPages = getOnboardingPages()
     var paginaActual by remember { mutableStateOf(0) }
     val pagina = onboardingPages[paginaActual]
     val esUltima = paginaActual == onboardingPages.size - 1
@@ -85,12 +109,16 @@ fun OnboardingScreen(onFinish: () -> Unit) {
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = EkoGreen40)
                 ) {
-                    Text(if (esUltima) "¡Empezar a ahorrar!" else "Siguiente",
-                        fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text(
+                        if (esUltima) stringResource(R.string.onboarding_boton_empezar)
+                        else stringResource(R.string.onboarding_boton_siguiente),
+                        fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color.White
+                    )
                 }
                 if (!esUltima) {
                     TextButton(onClick = onFinish) {
-                        Text("Omitir", color = Color(0xFF6B8F72), fontSize = 14.sp)
+                        Text(stringResource(R.string.onboarding_boton_omitir),
+                            color = Color(0xFF6B8F72), fontSize = 14.sp)
                     }
                 }
             }

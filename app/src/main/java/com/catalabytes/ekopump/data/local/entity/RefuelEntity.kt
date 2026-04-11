@@ -16,5 +16,11 @@ data class RefuelEntity(
     val savedAmount: Double,
     val latitude: Double,
     val longitude: Double,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    // v2: odómetro, consumo real, ahorro estimado, referencia gasolinera
+    val odometroKm: Int? = null,
+    val consumoRealL100: Float? = null,
+    val ahorroEstimadoEur: Float? = null,
+    val gasolineraId: String? = null,
+    val gasolineraName: String? = null
 )

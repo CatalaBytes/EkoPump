@@ -30,4 +30,20 @@ interface RefuelDao {
 
     @Query("SELECT COUNT(*) FROM refuel_history")
     fun getRefuelCount(): Flow<Int>
+
+    // Queries filtradas por mes (startMs = inicio del mes actual en milisegundos)
+    @Query("SELECT * FROM refuel_history WHERE timestamp >= :startMs ORDER BY timestamp DESC")
+    fun getRefuelsSince(startMs: Long): Flow<List<RefuelEntity>>
+
+    @Query("SELECT SUM(totalCost) FROM refuel_history WHERE timestamp >= :startMs")
+    fun getTotalSpentSince(startMs: Long): Flow<Double?>
+
+    @Query("SELECT SUM(liters) FROM refuel_history WHERE timestamp >= :startMs")
+    fun getTotalLitersSince(startMs: Long): Flow<Double?>
+
+    @Query("SELECT AVG(consumoRealL100) FROM refuel_history WHERE consumoRealL100 IS NOT NULL AND timestamp >= :startMs")
+    fun getAvgConsumoRealSince(startMs: Long): Flow<Float?>
+
+    @Query("SELECT SUM(ahorroEstimadoEur) FROM refuel_history WHERE ahorroEstimadoEur IS NOT NULL AND timestamp >= :startMs")
+    fun getTotalAhorroSince(startMs: Long): Flow<Float?>
 }
