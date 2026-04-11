@@ -163,6 +163,7 @@ Elektrikoa</string>
     <string name="punto_partida_guardar">📡 Gorde uneko kokapena</string>
     <string name="punto_partida_guardado">✓ Gordeta (%1$s, %2$s)</string>
     <string name="punto_partida_borrar">✕ Puntua ezabatu</string>
+    <string name="politica_privacidad">Pribazitate politika</string>
     <string name="smart_mejor_ahora">⚡ AUKERA ONENA ORAIN</string>
     <string name="smart_ahorras_fmt">Aurrezten duzu %1$s€</string>
     <string name="smart_voz_buen_momento">Brent jaisten ari da eta hau da merkeen. Une ona erregaitzeko.</string>

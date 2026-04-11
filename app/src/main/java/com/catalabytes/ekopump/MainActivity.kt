@@ -737,6 +737,30 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                 }
             }
         }
+
+        // ── Legal ────────────────────────────────────────────────────────
+        Column(
+            Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(2.dp)
+        ) {
+            TextButton(onClick = {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://ekopump.es/privacidad"))
+                )
+            }) {
+                Text(
+                    stringResource(R.string.politica_privacidad),
+                    fontSize = 12.sp,
+                    color = grayText
+                )
+            }
+            Text(
+                "v${com.catalabytes.ekopump.BuildConfig.VERSION_NAME} · CatalaBytes",
+                fontSize = 11.sp,
+                color = grayText.copy(alpha = 0.5f)
+            )
+        }
     }
 }
 
