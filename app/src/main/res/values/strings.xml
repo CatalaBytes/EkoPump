@@ -151,4 +151,9 @@ Eléctrico</string>
     <string name="layer_avisar">🔔 Avisarme cuando esté listo</string>
     <string name="layer_ver_roadmap">Ver qué estamos construyendo →</string>
     <string name="layer_avisado">✓ Te avisaremos cuando llegue</string>
+    <string name="fav_titulo">❤️ Favoritas</string>
+    <string name="fav_sin_datos">Aún no tienes favoritas</string>
+    <string name="fav_instruccion">Toca el corazón en cualquier ficha de gasolinera para guardarla</string>
+    <string name="fav_guardadas">%1$d gasolineras guardadas</string>
+    <string name="fav_guardadas_0">0 gasolineras guardadas</string>
 </resources>

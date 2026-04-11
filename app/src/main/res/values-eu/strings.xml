@@ -151,4 +151,9 @@ Elektrikoa</string>
     <string name="layer_avisar">🔔 Abistu prestatuta dagoenean</string>
     <string name="layer_ver_roadmap">Zer eraikitzen ari garen ikusi →</string>
     <string name="layer_avisado">✓ Abisatuko zaitugu iristean</string>
+    <string name="fav_titulo">❤️ Gogokoak</string>
+    <string name="fav_sin_datos">Oraindik ez daukazu gogokoak</string>
+    <string name="fav_instruccion">Sakatu bihotza edozein gasolindegiaren fitxan gordetzeko</string>
+    <string name="fav_guardadas">%1$d gasolindegia gordeta</string>
+    <string name="fav_guardadas_0">0 gasolindegia gordeta</string>
 </resources>

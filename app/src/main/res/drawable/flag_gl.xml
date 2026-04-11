@@ -1,8 +1,22 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="18dp" android:height="12dp"
-    android:viewportWidth="180" android:viewportHeight="120">
+    android:width="18dp"
+    android:height="12dp"
+    android:viewportWidth="900"
+    android:viewportHeight="600">
+
   <!-- Fondo blanco -->
-  <path android:fillColor="#FFFFFF" android:pathData="M0,0 H180 V120 H0 Z"/>
-  <!-- Banda azul diagonal de arriba-izquierda a abajo-derecha -->
-  <path android:fillColor="#003DA5" android:pathData="M0,30 L60,0 L120,0 L180,90 L180,120 L120,120 L60,120 L0,90 Z"/>
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M0,0 L900,0 L900,600 L0,600 Z"/>
+
+  <!-- Banda azul diagonal (de arriba-izquierda a abajo-derecha) -->
+  <path
+      android:fillColor="#009FD4"
+      android:pathData="M0,0 L360,0 L900,600 L540,600 Z"/>
+
+  <!-- Circulo dorado central (referencia simplificada al escudo) -->
+  <path
+      android:fillColor="#F5C300"
+      android:pathData="M420,270 m-35,0 a35,35 0 1,0 70,0 a35,35 0 1,0 -70,0"/>
+
 </vector>

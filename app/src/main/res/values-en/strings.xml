@@ -151,4 +151,9 @@ Vehicle</string>
     <string name="layer_avisar">🔔 Notify me when ready</string>
     <string name="layer_ver_roadmap">See what we\'re building →</string>
     <string name="layer_avisado">✓ We\'ll notify you when it arrives</string>
+    <string name="fav_titulo">❤️ Favourites</string>
+    <string name="fav_sin_datos">No favourites yet</string>
+    <string name="fav_instruccion">Tap the heart on any fuel station card to save it</string>
+    <string name="fav_guardadas">%1$d stations saved</string>
+    <string name="fav_guardadas_0">0 stations saved</string>
 </resources>

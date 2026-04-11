@@ -13,9 +13,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 
@@ -32,7 +35,6 @@ fun FavoritasScreen(
 ) {
     val context = LocalContext.current
 
-    // Recarga favoritas cada vez que se entra a la pantalla
     var favIds by remember { mutableStateOf(FavoritasPrefs.getIds(context)) }
     LaunchedEffect(Unit) { favIds = FavoritasPrefs.getIds(context) }
 
@@ -45,14 +47,17 @@ fun FavoritasScreen(
             .padding(16.dp)
     ) {
         Text(
-            text = "❤️ Favoritas",
+            text = stringResource(R.string.fav_titulo),
             fontSize = 22.sp,
             fontWeight = FontWeight.Bold,
             color = EkoGreen
         )
         Spacer(Modifier.height(4.dp))
         Text(
-            text = "${favoritas.size} gasolinera${if (favoritas.size != 1) "s" else ""} guardada${if (favoritas.size != 1) "s" else ""}",
+            text = if (favoritas.isEmpty())
+                stringResource(R.string.fav_guardadas_0)
+            else
+                stringResource(R.string.fav_guardadas, favoritas.size),
             fontSize = 13.sp,
             color = Color(0xFF6B8F72)
         )
@@ -72,17 +77,17 @@ fun FavoritasScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                     Text(
-                        "Aún no tienes favoritas",
+                        stringResource(R.string.fav_sin_datos),
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFF0FDF4)
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        "Toca el corazón en cualquier\nficha de gasolinera para guardarla",
+                        stringResource(R.string.fav_instruccion),
                         fontSize = 14.sp,
                         color = Color(0xFF6B8F72),
-                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        textAlign = TextAlign.Center
                     )
                 }
             }
@@ -115,7 +120,7 @@ fun FavoritasScreen(
                                         Spacer(Modifier.width(6.dp))
                                         Icon(
                                             Icons.Default.Notifications,
-                                            contentDescription = "Alerta activa",
+                                            contentDescription = stringResource(R.string.detail_alerta_titulo),
                                             tint = Color(0xFFFFB300),
                                             modifier = Modifier.size(14.dp)
                                         )

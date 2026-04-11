@@ -62,7 +62,7 @@ Elèctric</string>
     <string name="nav_lista">Llista</string>
     <string name="nav_mapa">Mapa</string>
     <string name="nav_historial">Historial</string>
-    <string name="nav_favoritas">Favorites</string>
+    <string name="nav_favoritas">Preferides</string>
     <string name="nav_perfil">Perfil</string>
     <string name="actualizado_ahora">Actualitzat: ara mateix</string>
     <string name="actualizado_hace_min">Actualitzat: fa %1$d min</string>
@@ -151,4 +151,9 @@ Elèctric</string>
     <string name="layer_avisar">🔔 Avisar-me quan estigui llest</string>
     <string name="layer_ver_roadmap">Veure què estem construint →</string>
     <string name="layer_avisado">✓ T’avisarem quan arribi</string>
+    <string name="fav_titulo">❤️ Preferides</string>
+    <string name="fav_sin_datos">Encara no tens preferides</string>
+    <string name="fav_instruccion">Toca el cor a qualsevol fitxa de gasolinera per desar-la</string>
+    <string name="fav_guardadas">%1$d gasolineres desades</string>
+    <string name="fav_guardadas_0">0 gasolineres desades</string>
 </resources>

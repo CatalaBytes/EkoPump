@@ -1,15 +1,32 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="18dp" android:height="12dp"
-    android:viewportWidth="180" android:viewportHeight="120">
+    android:width="18dp"
+    android:height="12dp"
+    android:viewportWidth="900"
+    android:viewportHeight="600">
+
   <!-- Fondo rojo -->
-  <path android:fillColor="#D7141A" android:pathData="M0,0 H180 V120 H0 Z"/>
-  <!-- Aspa blanca diagonal (triángulos blancos en las esquinas) -->
-  <path android:fillColor="#FFFFFF" android:pathData="M0,0 L75,60 L0,120 Z"/>
-  <path android:fillColor="#FFFFFF" android:pathData="M180,0 L105,60 L180,120 Z"/>
-  <path android:fillColor="#FFFFFF" android:pathData="M0,0 L90,50 L180,0 Z"/>
-  <path android:fillColor="#FFFFFF" android:pathData="M0,120 L90,70 L180,120 Z"/>
-  <!-- Cruz verde vertical -->
-  <path android:fillColor="#007700" android:pathData="M75,0 H105 V120 H75 Z"/>
-  <!-- Cruz verde horizontal -->
-  <path android:fillColor="#007700" android:pathData="M0,50 H180 V70 H0 Z"/>
+  <path
+      android:fillColor="#CC0000"
+      android:pathData="M0,0 L900,0 L900,600 L0,600 Z"/>
+
+  <!-- Aspa verde de San Andres (diagonal) -->
+  <!-- Banda diagonal \ (arriba-izquierda a abajo-derecha) -->
+  <path
+      android:fillColor="#006400"
+      android:pathData="M-60,0 L150,0 L960,600 L750,600 Z"/>
+  <!-- Banda diagonal // (arriba-derecha a abajo-izquierda) -->
+  <path
+      android:fillColor="#006400"
+      android:pathData="M750,0 L960,0 L150,600 L-60,600 Z"/>
+
+  <!-- Cruz blanca (horizontal + vertical) -->
+  <!-- Barra horizontal -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M0,255 L900,255 L900,345 L0,345 Z"/>
+  <!-- Barra vertical -->
+  <path
+      android:fillColor="#FFFFFF"
+      android:pathData="M405,0 L495,0 L495,600 L405,600 Z"/>
+
 </vector>
