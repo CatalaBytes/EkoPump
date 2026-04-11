@@ -156,6 +156,13 @@ Eléctrico</string>
     <string name="fav_instruccion">Toca el corazón en cualquier ficha de gasolinera para guardarla</string>
     <string name="fav_guardadas">%1$d gasolineras guardadas</string>
     <string name="fav_guardadas_0">0 gasolineras guardadas</string>
+    <string name="ahorro_de_paso">🛣️ De paso: %1$s</string>
+    <string name="ahorro_de_casa">🏠 Desde casa: %1$s</string>
+    <string name="punto_partida_titulo">📍 Punto de partida habitual</string>
+    <string name="punto_partida_desc">Guarda tu casa u oficina para ver el ahorro real si sales desde allí</string>
+    <string name="punto_partida_guardar">📡 Guardar ubicación actual</string>
+    <string name="punto_partida_guardado">✓ Guardado (%1$s, %2$s)</string>
+    <string name="punto_partida_borrar">✕ Borrar punto</string>
     <string name="smart_mejor_ahora">⚡ MEJOR OPCIÓN AHORA</string>
     <string name="smart_ahorras_fmt">Ahorras %1$s€</string>
     <string name="smart_voz_buen_momento">El Brent baja y aquí está lo más barato. Buen momento para repostar.</string>

@@ -19,13 +19,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
+import com.catalabytes.ekopump.domain.AhorroDoble
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 
 @Composable
 fun SmartDecisionCard(
     mejorGasolinera: GasolineraConDistancia?,
     precioActual: Double?,
-    precioAhorrado: Double?,
+    ahorroDoble: AhorroDoble?,
+    habitualDisponible: Boolean,
     brentBajando: Boolean,
     combustibleLabel: String,
     onNavigate: () -> Unit,
@@ -33,15 +35,12 @@ fun SmartDecisionCard(
 ) {
     if (mejorGasolinera == null || precioActual == null) return
 
+    val mejorAhorro = ahorroDoble?.dePaso?.beneficioNeto ?: 0.0
     val mensajeVoz = when {
-        brentBajando && (precioAhorrado ?: 0.0) > 3.0 ->
-            stringResource(R.string.smart_voz_buen_momento)
-        brentBajando ->
-            stringResource(R.string.smart_voz_bajando)
-        (precioAhorrado ?: 0.0) > 5.0 ->
-            stringResource(R.string.smart_voz_gran_ahorro)
-        else ->
-            stringResource(R.string.smart_voz_mejor_opcion)
+        brentBajando && mejorAhorro > 3.0 -> stringResource(R.string.smart_voz_buen_momento)
+        brentBajando                       -> stringResource(R.string.smart_voz_bajando)
+        mejorAhorro > 5.0                  -> stringResource(R.string.smart_voz_gran_ahorro)
+        else                               -> stringResource(R.string.smart_voz_mejor_opcion)
     }
 
     Card(
@@ -73,8 +72,8 @@ fun SmartDecisionCard(
                         letterSpacing = 0.8.sp
                     )
                 }
-                precioAhorrado?.let {
-                    if (it > 0.5) {
+                ahorroDoble?.dePaso?.let { r ->
+                    if (r.beneficioNeto > 0.5) {
                         Box(
                             modifier = Modifier
                                 .clip(RoundedCornerShape(20.dp))
@@ -82,7 +81,7 @@ fun SmartDecisionCard(
                                 .padding(horizontal = 8.dp, vertical = 2.dp)
                         ) {
                             Text(
-                                stringResource(R.string.smart_ahorras_fmt, "%.2f".format(it)),
+                                stringResource(R.string.smart_ahorras_fmt, "%.2f".format(r.beneficioNeto)),
                                 fontSize = 11.sp,
                                 color = EkoGreen40,
                                 fontWeight = FontWeight.SemiBold
@@ -134,6 +133,38 @@ fun SmartDecisionCard(
                 color = Color(0xFF8FAF93),
                 fontStyle = FontStyle.Italic
             )
+
+            // Líneas de ahorro dual (de paso / de casa)
+            ahorroDoble?.let { doble ->
+                Spacer(Modifier.height(8.dp))
+                HorizontalDivider(color = Color.White.copy(alpha = 0.08f))
+                Spacer(Modifier.height(8.dp))
+
+                // De paso
+                val dePasoLabel = if (doble.dePaso.valeLaPena)
+                    "✅ ${"%.2f".format(doble.dePaso.beneficioNeto)}€"
+                else
+                    "❌ ${"%.2f".format(-doble.dePaso.beneficioNeto)}€"
+                Text(
+                    stringResource(R.string.ahorro_de_paso, dePasoLabel),
+                    fontSize = 12.sp,
+                    color = if (doble.dePaso.valeLaPena) EkoGreen40 else Color(0xFFEF9A9A)
+                )
+
+                // De casa (solo si el usuario tiene punto habitual guardado)
+                if (habitualDisponible) {
+                    Spacer(Modifier.height(4.dp))
+                    val deCasaLabel = if (doble.deCasa.valeLaPena)
+                        "✅ ${"%.2f".format(doble.deCasa.beneficioNeto)}€"
+                    else
+                        "❌ ${"%.2f".format(-doble.deCasa.beneficioNeto)}€"
+                    Text(
+                        stringResource(R.string.ahorro_de_casa, deCasaLabel),
+                        fontSize = 12.sp,
+                        color = if (doble.deCasa.valeLaPena) EkoGreen40 else Color(0xFFEF9A9A)
+                    )
+                }
+            }
 
             Spacer(Modifier.height(12.dp))
 

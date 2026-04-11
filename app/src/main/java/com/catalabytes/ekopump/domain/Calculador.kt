@@ -1,5 +1,7 @@
 package com.catalabytes.ekopump.domain
 
+import kotlin.math.*
+
 /**
  * Calcula si vale la pena ir a una gasolinera más lejana.
  *
@@ -15,6 +17,11 @@ data class AhorroResult(
     val costeKmExtra: Double,     // € gastados en combustible extra
     val beneficioNeto: Double,    // ahorroBruto - costeKmExtra
     val valeLaPena: Boolean
+)
+
+data class AhorroDoble(
+    val dePaso: AhorroResult,     // sin km extra (pasas por allí de todos modos)
+    val deCasa: AhorroResult      // viaje específico desde punto habitual
 )
 
 fun calcularAhorro(
@@ -35,3 +42,23 @@ fun calcularAhorro(
         valeLaPena    = beneficioNeto > 0.05   // margen mínimo de 5 céntimos
     )
 }
+
+fun haversineKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+    val R = 6371.0
+    val dLat = (lat2 - lat1) * PI / 180.0
+    val dLon = (lon2 - lon1) * PI / 180.0
+    val a = sin(dLat / 2).pow(2) +
+            cos(lat1 * PI / 180.0) * cos(lat2 * PI / 180.0) * sin(dLon / 2).pow(2)
+    return R * 2.0 * atan2(sqrt(a), sqrt(1.0 - a))
+}
+
+fun calcularAhorroDoble(
+    precioRef: Double,
+    precioDestino: Double,
+    distanciaHabitualKm: Double,
+    consumoL100: Double,
+    litrosRepostar: Double
+): AhorroDoble = AhorroDoble(
+    dePaso = calcularAhorro(precioRef, precioDestino, 0.0, consumoL100, litrosRepostar),
+    deCasa = calcularAhorro(precioRef, precioDestino, distanciaHabitualKm, consumoL100, litrosRepostar)
+)

@@ -156,6 +156,13 @@ Elektrikoa</string>
     <string name="fav_instruccion">Sakatu bihotza edozein gasolindegiaren fitxan gordetzeko</string>
     <string name="fav_guardadas">%1$d gasolindegia gordeta</string>
     <string name="fav_guardadas_0">0 gasolindegia gordeta</string>
+    <string name="ahorro_de_paso">🛣️ Pasean: %1$s</string>
+    <string name="ahorro_de_casa">🏠 Etxetik: %1$s</string>
+    <string name="punto_partida_titulo">📍 Ohiko abiapuntua</string>
+    <string name="punto_partida_desc">Gorde etxea edo bulegoa han hasitako benetako aurrezkia ikusteko</string>
+    <string name="punto_partida_guardar">📡 Gorde uneko kokapena</string>
+    <string name="punto_partida_guardado">✓ Gordeta (%1$s, %2$s)</string>
+    <string name="punto_partida_borrar">✕ Puntua ezabatu</string>
     <string name="smart_mejor_ahora">⚡ AUKERA ONENA ORAIN</string>
     <string name="smart_ahorras_fmt">Aurrezten duzu %1$s€</string>
     <string name="smart_voz_buen_momento">Brent jaisten ari da eta hau da merkeen. Une ona erregaitzeko.</string>

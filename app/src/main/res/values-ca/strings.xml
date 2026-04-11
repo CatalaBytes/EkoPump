@@ -156,6 +156,13 @@ Elèctric</string>
     <string name="fav_instruccion">Toca el cor a qualsevol fitxa de gasolinera per desar-la</string>
     <string name="fav_guardadas">%1$d gasolineres desades</string>
     <string name="fav_guardadas_0">0 gasolineres desades</string>
+    <string name="ahorro_de_paso">🛣️ De pas: %1$s</string>
+    <string name="ahorro_de_casa">🏠 Des de casa: %1$s</string>
+    <string name="punto_partida_titulo">📍 Punt de partida habitual</string>
+    <string name="punto_partida_desc">Desa casa teva o oficina per veure l\'estalvi real si surts des d\'allà</string>
+    <string name="punto_partida_guardar">📡 Desar ubicació actual</string>
+    <string name="punto_partida_guardado">✓ Desat (%1$s, %2$s)</string>
+    <string name="punto_partida_borrar">✕ Esborrar punt</string>
     <string name="smart_mejor_ahora">⚡ MILLOR OPCIÓ ARA</string>
     <string name="smart_ahorras_fmt">Estalvies %1$s€</string>
     <string name="smart_voz_buen_momento">El Brent baixa i aquí tens el més barat. Bon moment per repostar.</string>

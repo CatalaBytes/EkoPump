@@ -54,6 +54,13 @@ import com.catalabytes.ekopump.domain.model.MapLayer
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
 import com.catalabytes.ekopump.ui.settings.CalculadorDialog
 import com.catalabytes.ekopump.domain.calcularAhorro
+import com.catalabytes.ekopump.domain.calcularAhorroDoble
+import com.catalabytes.ekopump.domain.haversineKm
+import com.catalabytes.ekopump.domain.AhorroDoble
+import com.catalabytes.ekopump.data.prefs.PuntoHabitual
+import com.google.android.gms.location.LocationServices
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.launch
 import com.catalabytes.ekopump.ui.brent.BrentWidget
 import com.catalabytes.ekopump.ui.brent.BrentHistorialScreen
 import com.catalabytes.ekopump.viewmodel.BrentViewModel
@@ -466,6 +473,9 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
     val vehicleType       by viewModel.vehicleType.collectAsState()
     val energyType        by viewModel.energyType.collectAsState()
     val modoTransportista by viewModel.modoTransportista.collectAsState()
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scope   = rememberCoroutineScope()
+    var puntoHabitual by remember { mutableStateOf(PuntoHabitual.cargar(context)) }
     val verde    = Color(0xFF69F0AE)
     val darkBg   = Color(0xFF0D1F0D)
     val darkCard = Color(0xFF162916)
@@ -675,6 +685,58 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                 }
             }
         }
+
+        // ── Punto de partida habitual ────────────────────────────────────
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                .background(darkCard).padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                stringResource(R.string.punto_partida_titulo),
+                fontSize = 13.sp, fontWeight = FontWeight.Bold, color = verde
+            )
+            Text(
+                stringResource(R.string.punto_partida_desc),
+                fontSize = 12.sp, color = grayText
+            )
+            puntoHabitual?.let { (lat, lon) ->
+                Text(
+                    stringResource(R.string.punto_partida_guardado,
+                        "%.4f".format(lat), "%.4f".format(lon)),
+                    fontSize = 11.sp, color = EkoGreen40
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                val fusedClient = LocationServices.getFusedLocationProviderClient(context)
+                                @Suppress("MissingPermission")
+                                val loc = fusedClient.lastLocation.await()
+                                if (loc != null) {
+                                    PuntoHabitual.guardar(context, loc.latitude, loc.longitude)
+                                    puntoHabitual = Pair(loc.latitude, loc.longitude)
+                                }
+                            } catch (_: Exception) {}
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = verde.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(stringResource(R.string.punto_partida_guardar), fontSize = 12.sp, color = verde)
+                }
+                if (puntoHabitual != null) {
+                    TextButton(onClick = {
+                        PuntoHabitual.limpiar(context)
+                        puntoHabitual = null
+                    }) {
+                        Text(stringResource(R.string.punto_partida_borrar), fontSize = 12.sp, color = grayText)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -700,17 +762,32 @@ fun ListaGasolineras(
     LazyColumn(contentPadding = PaddingValues(vertical = 8.dp)) {
         // SmartDecisionCard — primera gasolinera de la lista (la más barata)
         item {
-            val mejorGasolinera = lista.firstOrNull()
-            val precioMejor     = mejorGasolinera?.let { combustible.precio(it.gasolinera) }
-            val precioMasCaro   = lista.lastOrNull()?.let { combustible.precio(it.gasolinera) }
-            val ahorroPotencial = if (precioMejor != null && precioMasCaro != null)
-                ((precioMasCaro - precioMejor) * 40.0).coerceAtLeast(0.0) else null
+            val mejorGasolinera  = lista.firstOrNull()
+            val precioMejor      = mejorGasolinera?.let { combustible.precio(it.gasolinera) }
+            val precioRef        = lista.lastOrNull()?.let { combustible.precio(it.gasolinera) }
+            val puntoHabitual    = PuntoHabitual.cargar(context)
+            val distanciaHabitual = if (puntoHabitual != null && mejorGasolinera != null) {
+                haversineKm(
+                    puntoHabitual.first, puntoHabitual.second,
+                    mejorGasolinera.gasolinera.latitud, mejorGasolinera.gasolinera.longitud
+                )
+            } else null
+            val ahorroDoble: AhorroDoble? = if (precioMejor != null && precioRef != null && precioRef > precioMejor) {
+                calcularAhorroDoble(
+                    precioRef             = precioRef,
+                    precioDestino         = precioMejor,
+                    distanciaHabitualKm   = distanciaHabitual ?: 0.0,
+                    consumoL100           = consumo.toDouble(),
+                    litrosRepostar        = litros.toDouble()
+                )
+            } else null
             SmartDecisionCard(
-                mejorGasolinera  = mejorGasolinera,
-                precioActual     = precioMejor,
-                precioAhorrado   = ahorroPotencial,
-                brentBajando     = brentBajando,
-                combustibleLabel = stringResource(combustible.labelRes),
+                mejorGasolinera    = mejorGasolinera,
+                precioActual       = precioMejor,
+                ahorroDoble        = ahorroDoble,
+                habitualDisponible = puntoHabitual != null,
+                brentBajando       = brentBajando,
+                combustibleLabel   = stringResource(combustible.labelRes),
                 onNavigate = {
                     mejorGasolinera?.gasolinera?.let { g ->
                         com.catalabytes.ekopump.ui.navigation.navegarAGasolinera(
