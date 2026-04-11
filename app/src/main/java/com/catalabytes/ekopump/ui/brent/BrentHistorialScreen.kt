@@ -18,10 +18,17 @@ import com.catalabytes.ekopump.ui.theme.EkoAmber40
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
 import com.catalabytes.ekopump.viewmodel.BrentViewModel
 import com.patrykandpatrick.vico.compose.cartesian.CartesianChartHost
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberBottom
+import com.patrykandpatrick.vico.compose.cartesian.axis.rememberStart
+import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLine
 import com.patrykandpatrick.vico.compose.cartesian.layer.rememberLineCartesianLayer
 import com.patrykandpatrick.vico.compose.cartesian.rememberCartesianChart
+import com.patrykandpatrick.vico.core.cartesian.axis.HorizontalAxis
+import com.patrykandpatrick.vico.core.cartesian.axis.VerticalAxis
 import com.patrykandpatrick.vico.core.cartesian.data.CartesianChartModelProducer
 import com.patrykandpatrick.vico.core.cartesian.data.lineSeries
+import com.patrykandpatrick.vico.core.cartesian.layer.LineCartesianLayer
+import com.patrykandpatrick.vico.core.common.Fill
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -92,10 +99,17 @@ fun BrentHistorialScreen(
 
             if (historial.isNotEmpty()) {
                 Card(shape = RoundedCornerShape(12.dp), modifier = Modifier.fillMaxWidth()) {
+                    val amberLine = LineCartesianLayer.rememberLine(
+                        fill = LineCartesianLayer.LineFill.single(Fill(0xFFD97706.toInt()))
+                    )
+                    val lineLayer = rememberLineCartesianLayer(
+                        lineProvider = LineCartesianLayer.LineProvider.series(amberLine)
+                    )
                     CartesianChartHost(
                         chart = rememberCartesianChart(
-                            rememberLineCartesianLayer()
-                            // ejes: pendiente actualizar Vico a 2.1+
+                            lineLayer,
+                            startAxis = VerticalAxis.rememberStart(),
+                            bottomAxis = HorizontalAxis.rememberBottom()
                         ),
                         modelProducer = modelProducer,
                         modifier = Modifier.fillMaxWidth().height(220.dp).padding(8.dp)

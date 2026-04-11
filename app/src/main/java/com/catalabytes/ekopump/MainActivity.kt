@@ -379,9 +379,14 @@ fun GasolinerasScreen(
                     )
                     is UiState.Loading -> CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center), color = EkoGreen40)
-                    is UiState.Error   -> Text("⚠ ${state.message}",
-                        modifier = Modifier.align(Alignment.Center),
-                        color = MaterialTheme.colorScheme.error)
+                    is UiState.Error   -> Column(
+                        modifier = Modifier.align(Alignment.Center).padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text("⚠ ${state.message}", color = MaterialTheme.colorScheme.error)
+                        Spacer(Modifier.height(12.dp))
+                        Button(onClick = { viewModel.cargar() }) { Text("Reintentar") }
+                    }
                 }
                 2 -> HistoryScreen(
                     viewModel   = historyViewModel,
