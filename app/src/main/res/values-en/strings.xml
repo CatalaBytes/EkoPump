@@ -164,6 +164,9 @@ Vehicle</string>
     <string name="punto_partida_guardado">✓ Saved (%1$s, %2$s)</string>
     <string name="punto_partida_borrar">✕ Remove point</string>
     <string name="politica_privacidad">Privacy policy</string>
+    <string name="acerca_datos_minetur">Data: Gas Station Geoportal (MINETUR)</string>
+    <string name="acerca_telegram">Telegram channel</string>
+    <string name="acerca_disclaimer">EkoPump is an independent app. It is not affiliated with or representative of the Ministry for Ecological Transition.</string>
     <string name="smart_mejor_ahora">⚡ BEST OPTION NOW</string>
     <string name="smart_ahorras_fmt">You save %1$s€</string>
     <string name="smart_voz_buen_momento">Brent is falling and this is the cheapest. Good time to fill up.</string>

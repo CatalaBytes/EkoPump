@@ -738,7 +738,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             }
         }
 
-        // ── Legal ────────────────────────────────────────────────────────
+        // ── Acerca de ────────────────────────────────────────────────────
         Column(
             Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -755,6 +755,37 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
                     color = grayText
                 )
             }
+            TextButton(onClick = {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://geoportalgasolineras.es"))
+                )
+            }) {
+                Text(
+                    stringResource(R.string.acerca_datos_minetur),
+                    fontSize = 12.sp,
+                    color = grayText
+                )
+            }
+            TextButton(onClick = {
+                context.startActivity(
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/ekopump_es"))
+                )
+            }) {
+                Text(
+                    stringResource(R.string.acerca_telegram),
+                    fontSize = 12.sp,
+                    color = grayText
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            Text(
+                stringResource(R.string.acerca_disclaimer),
+                fontSize = 11.sp,
+                color = grayText.copy(alpha = 0.6f),
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            Spacer(Modifier.height(4.dp))
             Text(
                 "v${com.catalabytes.ekopump.BuildConfig.VERSION_NAME} · CatalaBytes",
                 fontSize = 11.sp,

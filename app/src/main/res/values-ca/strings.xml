@@ -164,6 +164,9 @@ Elèctric</string>
     <string name="punto_partida_guardado">✓ Desat (%1$s, %2$s)</string>
     <string name="punto_partida_borrar">✕ Esborrar punt</string>
     <string name="politica_privacidad">Política de privadesa</string>
+    <string name="acerca_datos_minetur">Dades: Geoportal Gasolineres (MINETUR)</string>
+    <string name="acerca_telegram">Canal de Telegram</string>
+    <string name="acerca_disclaimer">EkoPump és una app independent. No està afiliada ni representa el Ministeri per a la Transició Ecològica.</string>
     <string name="smart_mejor_ahora">⚡ MILLOR OPCIÓ ARA</string>
     <string name="smart_ahorras_fmt">Estalvies %1$s€</string>
     <string name="smart_voz_buen_momento">El Brent baixa i aquí tens el més barat. Bon moment per repostar.</string>

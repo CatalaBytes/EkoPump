@@ -23,8 +23,8 @@ android {
         applicationId = "com.catalabytes.ekopump"
         minSdk = 26                  // Android 8.0+ → ~95% dispositivos activos
         targetSdk = 35
-        versionCode = 13
-        versionName = "1.5.3"
+        versionCode = 14
+        versionName = "1.5.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 

@@ -164,6 +164,9 @@ Eléctrico</string>
     <string name="punto_partida_guardado">✓ Guardado (%1$s, %2$s)</string>
     <string name="punto_partida_borrar">✕ Borrar punto</string>
     <string name="politica_privacidad">Política de privacidad</string>
+    <string name="acerca_datos_minetur">Datos: Geoportal Gasolineras (MINETUR)</string>
+    <string name="acerca_telegram">Canal de Telegram</string>
+    <string name="acerca_disclaimer">EkoPump es una app independiente. No está afiliada ni representa al Ministerio para la Transición Ecológica.</string>
     <string name="smart_mejor_ahora">⚡ MEJOR OPCIÓN AHORA</string>
     <string name="smart_ahorras_fmt">Ahorras %1$s€</string>
     <string name="smart_voz_buen_momento">El Brent baja y aquí está lo más barato. Buen momento para repostar.</string>

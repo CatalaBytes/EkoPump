@@ -164,6 +164,9 @@ Elektrikoa</string>
     <string name="punto_partida_guardado">✓ Gordeta (%1$s, %2$s)</string>
     <string name="punto_partida_borrar">✕ Puntua ezabatu</string>
     <string name="politica_privacidad">Pribazitate politika</string>
+    <string name="acerca_datos_minetur">Datuak: Gasolindegiaren Geoportala (MINETUR)</string>
+    <string name="acerca_telegram">Telegram kanala</string>
+    <string name="acerca_disclaimer">EkoPump aplikazio independentea da. Ez dago Trantsizio Ekologikorako Ministerioari lotuta ezta hura ordezkatzen ere.</string>
     <string name="smart_mejor_ahora">⚡ AUKERA ONENA ORAIN</string>
     <string name="smart_ahorras_fmt">Aurrezten duzu %1$s€</string>
     <string name="smart_voz_buen_momento">Brent jaisten ari da eta hau da merkeen. Une ona erregaitzeko.</string>
