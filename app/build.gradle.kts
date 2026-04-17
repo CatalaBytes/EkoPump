@@ -48,10 +48,12 @@ android {
             versionNameSuffix = "-debug"
             buildConfigField("String", "MINETUR_BASE_URL",
                 "\"https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/\"")
+            buildConfigField("String", "OCM_API_KEY",
+                "\"${localProperties["OPEN_CHARGE_MAP_KEY"]}\"")
             buildConfigField("Boolean", "ENABLE_LOGS", "true")
         }
         release {
-            signingConfig = signingConfigs.getByName("release")          
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(
@@ -60,6 +62,8 @@ android {
             )
             buildConfigField("String", "MINETUR_BASE_URL",
                 "\"https://sedeaplicaciones.minetur.gob.es/ServiciosRESTCarburantes/PreciosCarburantes/\"")
+            buildConfigField("String", "OCM_API_KEY",
+                "\"${localProperties["OPEN_CHARGE_MAP_KEY"]}\"")
             buildConfigField("Boolean", "ENABLE_LOGS", "false")
         }
     }
