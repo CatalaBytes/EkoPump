@@ -1,6 +1,7 @@
 package com.catalabytes.ekopump.data.mapper
 
 import com.catalabytes.ekopump.data.api.EstacionDto
+import com.catalabytes.ekopump.data.local.entity.GasolineraEntity
 import com.catalabytes.ekopump.domain.model.Gasolinera
 
 fun EstacionDto.toDomain(): Gasolinera = Gasolinera(
@@ -20,4 +21,43 @@ fun EstacionDto.toDomain(): Gasolinera = Gasolinera(
     glp = precioGLP.replace(",", ".").toDoubleOrNull(),
     gnc = precioGNC.replace(",", ".").toDoubleOrNull(),
     gnl = precioGNL.replace(",", ".").toDoubleOrNull()
+)
+
+fun Gasolinera.toEntity(cachedAt: Long): GasolineraEntity = GasolineraEntity(
+    id = id,
+    nombre = nombre,
+    direccion = direccion,
+    localidad = localidad,
+    provincia = provincia,
+    latitud = latitud,
+    longitud = longitud,
+    horario = horario,
+    gasolina95 = gasolina95,
+    gasolina98 = gasolina98,
+    gasoleoA = gasoleoA,
+    gasoleoB = gasoleoB,
+    gasoleoPremium = gasoleoPremium,
+    glp = glp,
+    gnc = gnc,
+    gnl = gnl,
+    cachedAt = cachedAt
+)
+
+fun GasolineraEntity.toDomain(): Gasolinera = Gasolinera(
+    id = id,
+    nombre = nombre,
+    direccion = direccion,
+    localidad = localidad,
+    provincia = provincia,
+    latitud = latitud,
+    longitud = longitud,
+    horario = horario,
+    gasolina95 = gasolina95,
+    gasolina98 = gasolina98,
+    gasoleoA = gasoleoA,
+    gasoleoB = gasoleoB,
+    gasoleoPremium = gasoleoPremium,
+    glp = glp,
+    gnc = gnc,
+    gnl = gnl
 )

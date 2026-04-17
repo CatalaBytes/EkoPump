@@ -4,19 +4,35 @@ import android.location.Location
 import androidx.annotation.StringRes
 import com.catalabytes.ekopump.R
 import com.catalabytes.ekopump.data.api.MineturApiService
+import com.catalabytes.ekopump.data.local.dao.GasolineraDao
+import com.catalabytes.ekopump.data.local.entity.GasolineraEntity
 import com.catalabytes.ekopump.data.location.LocationProvider
 import com.catalabytes.ekopump.data.mapper.toDomain
+import com.catalabytes.ekopump.data.mapper.toEntity
 import com.catalabytes.ekopump.domain.model.Gasolinera
 import javax.inject.Inject
 import javax.inject.Singleton
 
+private const val TTL_MS = 30 * 60 * 1000L // 30 minutos
+
 @Singleton
 class GasolinerasRepository @Inject constructor(
     private val api: MineturApiService,
-    private val locationProvider: LocationProvider
+    private val locationProvider: LocationProvider,
+    private val gasolineraDao: GasolineraDao
 ) {
-    suspend fun getGasolineras(): List<Gasolinera> =
-        api.getEstaciones().listaEESSPrecio.map { it.toDomain() }
+    suspend fun getGasolineras(): List<Gasolinera> {
+        val ahora = System.currentTimeMillis()
+        val cachedAt = gasolineraDao.getCachedAt() ?: 0L
+        if (ahora - cachedAt < TTL_MS) {
+            val cache = gasolineraDao.getAll()
+            if (cache.isNotEmpty()) return cache.map { it.toDomain() }
+        }
+        val frescas = api.getEstaciones().listaEESSPrecio.map { it.toDomain() }
+        gasolineraDao.deleteAll()
+        gasolineraDao.upsertAll(frescas.map { it.toEntity(ahora) })
+        return frescas
+    }
 
     suspend fun getGasolinerasCercanas(
         combustible: Combustible = Combustible.GASOLINA_95,

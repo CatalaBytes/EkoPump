@@ -2,9 +2,11 @@ package com.catalabytes.ekopump.di
 
 import android.content.Context
 import androidx.room.Room
+import com.catalabytes.ekopump.data.local.dao.GasolineraDao
 import com.catalabytes.ekopump.data.local.dao.RefuelDao
 import com.catalabytes.ekopump.data.local.db.EkoPumpDatabase
 import com.catalabytes.ekopump.data.local.db.MIGRATION_1_2
+import com.catalabytes.ekopump.data.local.db.MIGRATION_2_3
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -23,10 +25,13 @@ object DatabaseModule {
             context,
             EkoPumpDatabase::class.java,
             "ekopump_database"
-        ).addMigrations(MIGRATION_1_2)
+        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3)
          .fallbackToDestructiveMigration()
          .build()
 
     @Provides
     fun provideRefuelDao(db: EkoPumpDatabase): RefuelDao = db.refuelDao()
+
+    @Provides
+    fun provideGasolineraDao(db: EkoPumpDatabase): GasolineraDao = db.gasolineraDao()
 }
