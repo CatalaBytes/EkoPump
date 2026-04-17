@@ -173,4 +173,7 @@ Elèctric</string>
     <string name="smart_voz_bajando">Els preus tendeixen a baixar. Aquesta és la teva millor opció ara.</string>
     <string name="smart_voz_gran_ahorro">Parar aquí té molt sentit avui. Gran diferència de preu.</string>
     <string name="smart_voz_mejor_opcion">Aquesta és la millor opció al teu radi ara mateix.</string>
+    <string name="ev_detail_operacional">Operatiu</string>
+    <string name="ev_detail_no_operativo">No operatiu</string>
+    <string name="ev_detail_carga_rapida">Càrrega ràpida</string>
 </resources>

@@ -2,7 +2,6 @@ package com.catalabytes.ekopump.data.repository
 
 import com.catalabytes.ekopump.data.api.ocm.OcmApiService
 import com.catalabytes.ekopump.data.api.ocm.toDomain
-import com.catalabytes.ekopump.data.api.ocm.toDomain
 import com.catalabytes.ekopump.data.api.ocm.toEntity
 import com.catalabytes.ekopump.data.local.dao.EvChargerDao
 import com.catalabytes.ekopump.domain.model.EvCharger

@@ -173,4 +173,7 @@ Elektrikoa</string>
     <string name="smart_voz_bajando">Prezioak jaisten ari dira. Hau da zure aukera onena orain.</string>
     <string name="smart_voz_gran_ahorro">Hemen gelditzea zentzuzkoa da gaur. Prezio desberdintasun handia.</string>
     <string name="smart_voz_mejor_opcion">Hau da zure erradioaren aukera onena orain bertan.</string>
+    <string name="ev_detail_operacional">Funtzionamenduan</string>
+    <string name="ev_detail_no_operativo">Ez dago funtzionamenduan</string>
+    <string name="ev_detail_carga_rapida">Karga azkarra</string>
 </resources>

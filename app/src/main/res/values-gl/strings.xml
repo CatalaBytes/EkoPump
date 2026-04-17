@@ -173,4 +173,7 @@ Eléctrico</string>
     <string name="smart_voz_bajando">Os prezos tenden a baixar. Esta é a túa mellor opción agora.</string>
     <string name="smart_voz_gran_ahorro">Parar aquí ten moito sentido hoxe. Grande diferenza de prezo.</string>
     <string name="smart_voz_mejor_opcion">Esta é a mellor opción no teu radio agora mesmo.</string>
+    <string name="ev_detail_operacional">Operativo</string>
+    <string name="ev_detail_no_operativo">Non operativo</string>
+    <string name="ev_detail_carga_rapida">Carga rápida</string>
 </resources>

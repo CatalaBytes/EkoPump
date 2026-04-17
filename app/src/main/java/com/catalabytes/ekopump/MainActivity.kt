@@ -49,6 +49,7 @@ import com.catalabytes.ekopump.ui.history.HistoryScreen
 import com.catalabytes.ekopump.ui.favorites.FavoritasScreen
 import com.catalabytes.ekopump.ui.history.HistoryViewModel
 import com.catalabytes.ekopump.ui.map.ComingSoonSheet
+import com.catalabytes.ekopump.ui.map.EvDetailSheet
 import com.catalabytes.ekopump.ui.map.MapScreen
 import com.catalabytes.ekopump.domain.model.MapLayer
 import com.catalabytes.ekopump.ui.settings.LanguageSelectorDialog
@@ -137,6 +138,7 @@ fun GasolinerasScreen(
     val ctx = androidx.compose.ui.platform.LocalContext.current
     var mostrarIdiomas  by remember { mutableStateOf(false) }
     var gasolineraMapaSeleccionada by remember { mutableStateOf<com.catalabytes.ekopump.data.repository.GasolineraConDistancia?>(null) }
+    var evCargadorSeleccionado by remember { mutableStateOf<com.catalabytes.ekopump.domain.model.EvCharger?>(null) }
     var mostrarRepostarDesdeDetalle  by remember { mutableStateOf(false) }
     var mostrarBrent              by remember { mutableStateOf(false) }
     var mostrarRegistrarRepostaje by remember { mutableStateOf(false) }
@@ -150,6 +152,7 @@ fun GasolinerasScreen(
     val energyType by viewModel.energyType.collectAsState()
     var capaActiva       by remember { mutableStateOf(MapLayer.GASOLINERAS) }
     var comingSoonLayer  by remember { mutableStateOf<MapLayer?>(null) }
+    val cargadoresEv     by viewModel.cargadoresEv.collectAsState()
 
     val permisosLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -205,6 +208,9 @@ fun GasolinerasScreen(
         }
     }
 
+    evCargadorSeleccionado?.let { charger ->
+        EvDetailSheet(charger = charger, onDismiss = { evCargadorSeleccionado = null })
+    }
     if (mostrarIdiomas) {
         LanguageSelectorDialog(onDismiss = { mostrarIdiomas = false })
     }
@@ -383,6 +389,7 @@ fun GasolinerasScreen(
                 1 -> when (val state = uiState) {
                     is UiState.Success -> MapScreen(
                         gasolineras        = state.data,
+                        cargadoresEv       = cargadoresEv,
                         combustible        = combustible,
                         userLat            = userLat,
                         userLon            = userLon,
@@ -397,7 +404,14 @@ fun GasolinerasScreen(
                             }
                         },
                         onComingSoonLayer  = { layer -> comingSoonLayer = layer },
-                        onGasolineraClick  = { gasolineraMapaSeleccionada = it }
+                        onPointClick       = { point ->
+                            when (point) {
+                                is com.catalabytes.ekopump.domain.model.MapPoint.Gasolinera ->
+                                    gasolineraMapaSeleccionada = point.item
+                                is com.catalabytes.ekopump.domain.model.MapPoint.Ev ->
+                                    evCargadorSeleccionado = point.charger
+                            }
+                        }
                     )
                     is UiState.Loading -> CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center), color = EkoGreen40)
@@ -490,6 +504,58 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
         verticalArrangement = Arrangement.spacedBy(20.dp)
     ) {
         Spacer(Modifier.height(8.dp))
+
+        // ── Punto de partida habitual ────────────────────────────────────
+        Column(
+            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
+                .background(darkCard).padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                stringResource(R.string.punto_partida_titulo),
+                fontSize = 13.sp, fontWeight = FontWeight.Bold, color = verde
+            )
+            Text(
+                stringResource(R.string.punto_partida_desc),
+                fontSize = 12.sp, color = grayText
+            )
+            puntoHabitual?.let { (lat, lon) ->
+                Text(
+                    stringResource(R.string.punto_partida_guardado,
+                        "%.4f".format(lat), "%.4f".format(lon)),
+                    fontSize = 11.sp, color = EkoGreen40
+                )
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            try {
+                                val fusedClient = LocationServices.getFusedLocationProviderClient(context)
+                                @Suppress("MissingPermission")
+                                val loc = fusedClient.lastLocation.await()
+                                if (loc != null) {
+                                    PuntoHabitual.guardar(context, loc.latitude, loc.longitude)
+                                    puntoHabitual = Pair(loc.latitude, loc.longitude)
+                                }
+                            } catch (_: Exception) {}
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = verde.copy(alpha = 0.15f)),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Text(stringResource(R.string.punto_partida_guardar), fontSize = 12.sp, color = verde)
+                }
+                if (puntoHabitual != null) {
+                    TextButton(onClick = {
+                        PuntoHabitual.limpiar(context)
+                        puntoHabitual = null
+                    }) {
+                        Text(stringResource(R.string.punto_partida_borrar), fontSize = 12.sp, color = grayText)
+                    }
+                }
+            }
+        }
 
         // ── Modo Transportista ───────────────────────────────────────────
         Card(
@@ -686,58 +752,6 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             }
         }
 
-        // ── Punto de partida habitual ────────────────────────────────────
-        Column(
-            Modifier.fillMaxWidth().clip(RoundedCornerShape(12.dp))
-                .background(darkCard).padding(14.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                stringResource(R.string.punto_partida_titulo),
-                fontSize = 13.sp, fontWeight = FontWeight.Bold, color = verde
-            )
-            Text(
-                stringResource(R.string.punto_partida_desc),
-                fontSize = 12.sp, color = grayText
-            )
-            puntoHabitual?.let { (lat, lon) ->
-                Text(
-                    stringResource(R.string.punto_partida_guardado,
-                        "%.4f".format(lat), "%.4f".format(lon)),
-                    fontSize = 11.sp, color = EkoGreen40
-                )
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = {
-                        scope.launch {
-                            try {
-                                val fusedClient = LocationServices.getFusedLocationProviderClient(context)
-                                @Suppress("MissingPermission")
-                                val loc = fusedClient.lastLocation.await()
-                                if (loc != null) {
-                                    PuntoHabitual.guardar(context, loc.latitude, loc.longitude)
-                                    puntoHabitual = Pair(loc.latitude, loc.longitude)
-                                }
-                            } catch (_: Exception) {}
-                        }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = verde.copy(alpha = 0.15f)),
-                    shape = RoundedCornerShape(10.dp)
-                ) {
-                    Text(stringResource(R.string.punto_partida_guardar), fontSize = 12.sp, color = verde)
-                }
-                if (puntoHabitual != null) {
-                    TextButton(onClick = {
-                        PuntoHabitual.limpiar(context)
-                        puntoHabitual = null
-                    }) {
-                        Text(stringResource(R.string.punto_partida_borrar), fontSize = 12.sp, color = grayText)
-                    }
-                }
-            }
-        }
-
         // ── Acerca de ────────────────────────────────────────────────────
         Column(
             Modifier.fillMaxWidth(),
@@ -746,7 +760,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
         ) {
             TextButton(onClick = {
                 context.startActivity(
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://ekopump.es/privacidad"))
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://ekopump.es/privacy.html"))
                 )
             }) {
                 Text(
@@ -768,7 +782,7 @@ fun PerfilScreen(viewModel: GasolinerasViewModel) {
             }
             TextButton(onClick = {
                 context.startActivity(
-                    Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/ekopump_es"))
+                    Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/ekopump"))
                 )
             }) {
                 Text(

@@ -24,16 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import com.catalabytes.ekopump.data.ev.ChargePoint
-import com.catalabytes.ekopump.data.ev.OpenChargeMapRepository
 import com.catalabytes.ekopump.data.repository.Combustible
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
+import com.catalabytes.ekopump.domain.model.EvCharger
 import com.catalabytes.ekopump.domain.model.MapLayer
+import com.catalabytes.ekopump.domain.model.MapPoint
 import com.catalabytes.ekopump.ui.theme.EkoGreen40
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.maplibre.android.MapLibre
+import org.maplibre.android.style.layers.Property
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.camera.CameraUpdateFactory
 import org.maplibre.android.geometry.LatLng
@@ -51,6 +50,7 @@ import org.maplibre.android.style.sources.GeoJsonSource
 @Composable
 fun MapScreen(
     gasolineras: List<GasolineraConDistancia>,
+    cargadoresEv: List<EvCharger> = emptyList(),
     combustible: Combustible,
     userLat: Double,
     userLon: Double,
@@ -58,7 +58,7 @@ fun MapScreen(
     capaActiva: MapLayer = MapLayer.GASOLINERAS,
     onCapaChanged: (MapLayer) -> Unit = {},
     onComingSoonLayer: (MapLayer) -> Unit = {},
-    onGasolineraClick: (GasolineraConDistancia) -> Unit = {}
+    onPointClick: (MapPoint) -> Unit = {}
 ) {
     val context = LocalContext.current
     MapLibre.getInstance(context)
@@ -67,48 +67,61 @@ fun MapScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
-    // Carga puntos de carga EV cuando la capa activa es ELECTRICO
-    var chargePoints by remember { mutableStateOf<List<ChargePoint>>(emptyList()) }
-    LaunchedEffect(capaActiva, userLat, userLon) {
-        if (capaActiva == MapLayer.ELECTRICO && userLat != 0.0 && userLon != 0.0) {
-            chargePoints = withContext(Dispatchers.IO) {
-                OpenChargeMapRepository.fetchCercanos(userLat, userLon)
-            }
-        } else {
-            chargePoints = emptyList()
+    // rememberUpdatedState: el factory se ejecuta una vez; .value siempre lee el dato actual
+    val cargadoresEvState = rememberUpdatedState(cargadoresEv)
+    val gasolinerasState  = rememberUpdatedState(gasolineras)
+    val onPointClickState = rememberUpdatedState(onPointClick)
+
+    // Visibilidad capas gasolineras según capa activa
+    LaunchedEffect(capaActiva, mapInstance) {
+        val map = mapInstance ?: return@LaunchedEffect
+        map.getStyle { style ->
+            val vis = if (capaActiva == MapLayer.GASOLINERAS) Property.VISIBLE else Property.NONE
+            style.getLayer("gasolineras-layer")?.setProperties(visibility(vis))
+            style.getLayer("layer-clusters")?.setProperties(visibility(vis))
         }
     }
 
-    // Actualiza capa EV en el mapa cuando cambian los puntos
-    LaunchedEffect(chargePoints, mapInstance) {
+    // Capa EV: depende también de capaActiva para limpiarla al volver a GASOLINERAS
+    LaunchedEffect(cargadoresEv, capaActiva, mapInstance) {
         val map = mapInstance ?: return@LaunchedEffect
         map.getStyle { style ->
             style.removeLayer("ev-layer")
+            style.removeLayer("ev-cluster-layer")
             style.removeSource("ev-source")
-
-            if (chargePoints.isEmpty()) return@getStyle
-
-            chargePoints.forEach { cp ->
-                style.addImage("ev-${cp.id}", crearMarcadorElectrico(cp.conectores))
-            }
-            val evFeatures = chargePoints.map { cp ->
+            if (cargadoresEv.isEmpty() || capaActiva != MapLayer.ELECTRICO) return@getStyle
+            style.addImage("ev-marker", crearMarcadorElectrico())
+            style.addImage("ev-cluster", crearBitmapClusterEv())
+            val evFeatures = cargadoresEv.map { charger ->
                 org.maplibre.geojson.Feature.fromGeometry(
-                    org.maplibre.geojson.Point.fromLngLat(cp.lon, cp.lat)
-                ).apply { addStringProperty("ev_id", cp.id) }
+                    org.maplibre.geojson.Point.fromLngLat(charger.longitud, charger.latitud)
+                ).apply { addStringProperty("ev_id", charger.id.toString()) }
             }
             val evSource = GeoJsonSource(
                 "ev-source",
-                org.maplibre.geojson.FeatureCollection.fromFeatures(evFeatures)
+                org.maplibre.geojson.FeatureCollection.fromFeatures(emptyList()),
+                GeoJsonOptions()
+                    .withCluster(true)
+                    .withClusterMaxZoom(14)
+                    .withClusterRadius(50)
             )
             style.addSource(evSource)
-            val evLayer = SymbolLayer("ev-layer", "ev-source").apply {
+            evSource.setGeoJson(org.maplibre.geojson.FeatureCollection.fromFeatures(evFeatures))
+            val evClusterLayer = SymbolLayer("ev-cluster-layer", "ev-source").apply {
+                minZoom = 0f
+                maxZoom = 13f
                 setProperties(
-                    iconImage(org.maplibre.android.style.expressions.Expression.concat(
-                        org.maplibre.android.style.expressions.Expression.literal("ev-"),
-                        org.maplibre.android.style.expressions.Expression.toString(
-                            org.maplibre.android.style.expressions.Expression.get("ev_id")
-                        )
-                    )),
+                    iconImage("ev-cluster"),
+                    iconAllowOverlap(true),
+                    iconSize(1.0f)
+                )
+            }
+            style.addLayer(evClusterLayer)
+            val evLayer = SymbolLayer("ev-layer", "ev-source").apply {
+                minZoom = 13f
+                maxZoom = 22f
+                setProperties(
+                    iconImage("ev-marker"),
                     iconAllowOverlap(true),
                     iconSize(1.0f)
                 )
@@ -196,7 +209,7 @@ fun MapScreen(
                                 // Permiso no concedido aún
                             }
 
-                            // ── 7. Click: cluster → zoom in │ punto → info ────────────
+                            // ── 7. Click: cluster → zoom in │ gasolinera → info │ EV → info ──
                             map.addOnMapClickListener { latLng ->
                                 val pixel = map.projection.toScreenLocation(latLng)
 
@@ -210,13 +223,33 @@ fun MapScreen(
                                     return@addOnMapClickListener true
                                 }
 
+                                val evClusterFeatures = map.queryRenderedFeatures(pixel, "ev-cluster-layer")
+                                if (evClusterFeatures.isNotEmpty()) {
+                                    val currentZoom = map.cameraPosition.zoom
+                                    map.animateCamera(
+                                        CameraUpdateFactory.newLatLngZoom(latLng, currentZoom + 2.0),
+                                        400
+                                    )
+                                    return@addOnMapClickListener true
+                                }
+
                                 val markerFeatures = map.queryRenderedFeatures(pixel, "gasolineras-layer")
                                 if (markerFeatures.isNotEmpty()) {
                                     val feature = markerFeatures.first()
                                     val id = feature.getStringProperty("id")
-                                    val gasolinera = gasolineras.find { it.gasolinera.id == id }
+                                    val gasolinera = gasolinerasState.value.find { it.gasolinera.id == id }
                                     if (gasolinera != null) {
-                                        onGasolineraClick(gasolinera)
+                                        onPointClickState.value(MapPoint.Gasolinera(gasolinera))
+                                        return@addOnMapClickListener true
+                                    }
+                                }
+
+                                val evFeatures = map.queryRenderedFeatures(pixel, "ev-layer")
+                                if (evFeatures.isNotEmpty()) {
+                                    val evIdStr = evFeatures.first().getStringProperty("ev_id")
+                                    val charger = cargadoresEvState.value.find { it.id.toString() == evIdStr }
+                                    if (charger != null) {
+                                        onPointClickState.value(MapPoint.Ev(charger))
                                         return@addOnMapClickListener true
                                     }
                                 }
@@ -339,31 +372,51 @@ private fun crearMarcadorConPrecio(precio: String, esBarata: Boolean): Bitmap {
     return bitmap
 }
 
-private fun crearMarcadorElectrico(conectores: Int): Bitmap {
-    val size = 100
+private fun crearBitmapClusterEv(): Bitmap {
+    val size = 120
     val radio = size / 2f
     val bitmap = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
     val canvas = Canvas(bitmap)
-
     val paintFondo = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#FFD600")
+        color = Color.parseColor("#1A237E")
         style = Paint.Style.FILL
     }
     val paintBorde = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A237E")
+        color = Color.parseColor("#FFD600")
         style = Paint.Style.STROKE
         strokeWidth = 4f
     }
     val paintIcono = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#1A237E")
-        textSize = 38f
+        color = Color.parseColor("#FFD600")
+        textSize = 36f
         textAlign = Paint.Align.CENTER
     }
-
     canvas.drawCircle(radio, radio, radio - 4f, paintFondo)
     canvas.drawCircle(radio, radio, radio - 4f, paintBorde)
     val textY = radio - (paintIcono.descent() + paintIcono.ascent()) / 2f
-    canvas.drawText("⚡", radio, textY, paintIcono)
+    canvas.drawText("\u26a1", radio, textY, paintIcono)
+    return bitmap
+}
 
+private fun crearMarcadorElectrico(): Bitmap {
+    val paintFondo  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#1A237E"); style = Paint.Style.FILL }
+    val paintBorde  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#FFD600"); style = Paint.Style.STROKE; strokeWidth = 4f }
+    val paintPunta  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.parseColor("#1A237E"); style = Paint.Style.FILL }
+    val paintIcono  = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = Color.WHITE; textSize = 32f; textAlign = Paint.Align.CENTER }
+    val w = 90; val h = 70; val radio = 12f
+    val bitmap = Bitmap.createBitmap(w, h + 20, Bitmap.Config.ARGB_8888)
+    val canvas = Canvas(bitmap)
+    val rect = RectF(2f, 2f, w - 2f, h - 2f)
+    canvas.drawRoundRect(rect, radio, radio, paintFondo)
+    canvas.drawRoundRect(rect, radio, radio, paintBorde)
+    val path = Path().apply {
+        moveTo(w / 2f - 12f, h - 2f)
+        lineTo(w / 2f, h + 18f)
+        lineTo(w / 2f + 12f, h - 2f)
+        close()
+    }
+    canvas.drawPath(path, paintPunta)
+    val textY = h / 2f - (paintIcono.descent() + paintIcono.ascent()) / 2f
+    canvas.drawText("\u26a1", w / 2f, textY, paintIcono)
     return bitmap
 }

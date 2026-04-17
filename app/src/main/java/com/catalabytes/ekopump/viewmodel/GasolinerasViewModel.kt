@@ -12,9 +12,11 @@ import com.catalabytes.ekopump.data.prefs.CalculadorPrefs
 import com.catalabytes.ekopump.data.prefs.PriceAlertPrefs
 import com.catalabytes.ekopump.data.prefs.PriceHistoryPrefs
 import com.catalabytes.ekopump.data.repository.Combustible
+import com.catalabytes.ekopump.data.repository.EvRepository
 import com.catalabytes.ekopump.data.repository.GasolineraConDistancia
 import com.catalabytes.ekopump.data.repository.GasolinerasRepository
 import com.catalabytes.ekopump.domain.model.EnergyType
+import com.catalabytes.ekopump.domain.model.EvCharger
 import com.catalabytes.ekopump.domain.model.TendenciaPrecio
 import com.catalabytes.ekopump.domain.model.VehicleType
 import com.catalabytes.ekopump.notifications.PriceAlertChecker
@@ -35,6 +37,7 @@ import javax.inject.Inject
 class GasolinerasViewModel @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val repository: GasolinerasRepository,
+    private val evRepository: EvRepository,
     private val locationProvider: LocationProvider,
     private val calculadorPrefs: CalculadorPrefs,
     private val priceHistoryPrefs: PriceHistoryPrefs,
@@ -84,6 +87,12 @@ class GasolinerasViewModel @Inject constructor(
 
     val modoTransportista: StateFlow<Boolean> = calculadorPrefs.modoTransportista
         .stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    private val _cargadoresEv = MutableStateFlow<List<EvCharger>>(emptyList())
+    val cargadoresEv: StateFlow<List<EvCharger>> = _cargadoresEv.asStateFlow()
+
+    private val _evCargando = MutableStateFlow(false)
+    val evCargando: StateFlow<Boolean> = _evCargando.asStateFlow()
 
     private val _radioKm = MutableStateFlow(10.0)
     val radioKm: StateFlow<Double> = _radioKm.asStateFlow()
@@ -195,6 +204,22 @@ class GasolinerasViewModel @Inject constructor(
         )
     }
 
+    fun cargarEv() {
+        val lat = _userLat.value
+        val lon = _userLon.value
+        if (lat == 40.4168 && lon == -3.7038) return // coordenadas por defecto, GPS no disponible aún
+        viewModelScope.launch {
+            _evCargando.value = true
+            try {
+                _cargadoresEv.value = evRepository.getChargers(lat, lon)
+            } catch (_: Exception) {
+                _cargadoresEv.value = emptyList()
+            } finally {
+                _evCargando.value = false
+            }
+        }
+    }
+
     fun setCombustible(c: Combustible) { _combustible.value = c; cargar() }
     fun setConsumo(v: Float)     { viewModelScope.launch { calculadorPrefs.setConsumo(v) } }
     fun setLitros(v: Float)      { viewModelScope.launch { calculadorPrefs.setLitros(v) } }
@@ -207,7 +232,7 @@ class GasolinerasViewModel @Inject constructor(
             EnergyType.GNC    -> setCombustible(Combustible.GNC)
             EnergyType.GNL    -> setCombustible(Combustible.GNL)
             EnergyType.ADBLUE -> { /* AdBlue no filtra lista */ }
-            EnergyType.EV     -> { /* EV: próximamente OpenChargeMap */ }
+            EnergyType.EV     -> cargarEv()
             null              -> { /* sin energía alternativa, mantener combustible actual */ }
         }
     }

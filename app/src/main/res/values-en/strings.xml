@@ -173,4 +173,7 @@ Vehicle</string>
     <string name="smart_voz_bajando">Prices are trending down. This is your best option now.</string>
     <string name="smart_voz_gran_ahorro">Stopping here makes a lot of sense today. Big price difference.</string>
     <string name="smart_voz_mejor_opcion">This is the best option in your area right now.</string>
+    <string name="ev_detail_operacional">Operational</string>
+    <string name="ev_detail_no_operativo">Not operational</string>
+    <string name="ev_detail_carga_rapida">Fast charge</string>
 </resources>
